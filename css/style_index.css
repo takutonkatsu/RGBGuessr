@@ -23,6 +23,16 @@ footer{
 /*--------------------
 オリジナルのフレーム
 --------------------*/
+
+.flex{
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: -ms-flex;
+    display: -o-flex;
+    display: flex;
+    justify-content: center;
+}
+
 .frame {
     width: 90%;
     margin: 0px auto 10px;
@@ -98,8 +108,8 @@ img.img_border{
 }
 .heading2_matching{
     color: #ffffff;
-    border-left: solid 6px #d00;/*左側の線*/
-    background: #ff5555;/*背景色*/
+    border-left: solid 6px #00bb00;/*左側の線*/
+    background: #48e044;/*背景色*/
     margin-bottom: 10px;/*下のバーとの余白*/
     line-height: 1.0;
     padding: 0.5em;
@@ -110,8 +120,8 @@ img.img_border{
 }
 .heading2_original{
     color: #ffffff;
-    border-left: solid 6px #00bb00;/*左側の線*/
-    background: #48e044;/*背景色*/
+    border-left: solid 6px #d00;/*左側の線*/
+    background: #ff5555;/*背景色*/
     margin-bottom: 10px;/*下のバーとの余白*/
     line-height: 1.0;
     padding: 0.5em;

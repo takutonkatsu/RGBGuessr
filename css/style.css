@@ -396,7 +396,11 @@ border-bottom: solid 2px #808080;/*線を消す*/
 }
 
 .flex{
-    /*コレ追加*/display: flex;
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: -ms-flex;
+    display: -o-flex;
+    display: flex;
     justify-content: center;
 }
 
