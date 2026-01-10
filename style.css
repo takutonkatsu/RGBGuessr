@@ -314,3 +314,74 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+
+/* ▼ Party Result Layout Update */
+/* 比較エリアを縦並び（上段：プレイヤー、下段：ターゲット）に変更 */
+.party-compare-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+.party-players-row {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+}
+.party-target-row {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(255,255,255,0.1);
+}
+.party-compare-item {
+    width: 60px; /* 固定幅で整列 */
+    text-align: center;
+}
+.party-compare-item .mini-box {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* 戦績エリアの名前幅修正 */
+.p-stat-name-disp {
+    font-size: 0.7rem;
+    color: #ccc;
+    max-width: none; /* 幅制限を解除 */
+    width: auto;
+    white-space: nowrap;
+}
+
+/* 勝利条件設定用 */
+.setting-area {
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
+.goal-select {
+    background: #000;
+    color: #fff;
+    border: 1px solid var(--primary-party);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    margin-left: 10px;
+}
+
+/* 優勝決定時の演出 */
+.winner-declare {
+    font-size: 1.5rem;
+    color: var(--accent-gold);
+    font-weight: 900;
+    animation: pulse 1s infinite;
+    margin-bottom: 10px;
+}

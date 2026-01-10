@@ -269,6 +269,12 @@
                 <p class="input-label">YOUR NAME (Max 6)</p>
                 <input type="text" id="party-name-input" maxlength="6" placeholder="Player" class="name-input">
             </div>
+            
+            <div class="setting-area">
+                <label style="color:#aaa; font-size:0.8rem; display:block; margin-bottom:5px;">GOAL (Wins)</label>
+                <input type="number" id="party-goal-input" class="name-input" placeholder="5" value="5" min="0" style="width:100px; font-size:1.5rem; border-color:var(--primary-party);">
+                <p style="color:#666; font-size:0.7rem; margin-top:5px;">Enter "0" for Endless Mode</p>
+            </div>
             <div class="menu-grid">
                 <div class="game-card" style="border-color:var(--primary-party);" onclick="partyGame.createRoom()">
                     <div class="card-icon">🏠</div><div class="card-content"><h3>CREATE ROOM</h3><p>3人部屋を作成</p></div>
@@ -290,6 +296,10 @@
             <div class="game-header"><h2 class="game-title color-party">Lobby</h2></div>
             <p>Share this Room ID</p>
             <div id="party-room-id-display" class="room-id-display" style="color:var(--primary-party);">----</div>
+            
+            <div id="party-lobby-goal" style="color:#fff; font-family:var(--font-mono); margin-bottom:15px; font-weight:bold;">
+                GOAL: ---
+            </div>
             <div class="loading-spinner" style="border-left-color:var(--primary-party);"></div>
             <p id="party-status-text" class="status-text">Waiting for players (1/3)...</p>
             <div style="margin-top:20px; font-size:0.9rem; color:#aaa;">
@@ -316,6 +326,7 @@
 
         <section id="screen-party-result" class="screen fade-in result-screen">
             <h2 id="party-result-title" class="result-title-big">RESULT</h2>
+            <div id="party-final-winner" class="hidden winner-declare"></div>
 
             <div class="party-result-main">
                 <div class="p-res-box order-2">
@@ -338,37 +349,40 @@
 
             <div class="party-stats-container">
                 <div class="p-stat-item">
-                    <span class="p-stat-label">WINS</span>
-                    <span id="p-win-host" class="p-stat-val">0</span>
-                    <span id="p-name-host" class="p-stat-name-disp">Host</span>
+                    <span class="p-stat-label">WINS</span><span id="p-win-host" class="p-stat-val">0</span><span id="p-name-host" class="p-stat-name-disp">Host</span>
                 </div>
                 <div class="p-stat-item">
-                    <span class="p-stat-label">WINS</span>
-                    <span id="p-win-guest" class="p-stat-val">0</span>
-                    <span id="p-name-guest" class="p-stat-name-disp">Guest</span>
+                    <span class="p-stat-label">WINS</span><span id="p-win-guest" class="p-stat-val">0</span><span id="p-name-guest" class="p-stat-name-disp">Guest</span>
                 </div>
                 <div class="p-stat-item">
-                    <span class="p-stat-label">WINS</span>
-                    <span id="p-win-guest2" class="p-stat-val">0</span>
-                    <span id="p-name-guest2" class="p-stat-name-disp">Guest2</span>
+                    <span class="p-stat-label">WINS</span><span id="p-win-guest2" class="p-stat-val">0</span><span id="p-name-guest2" class="p-stat-name-disp">Guest2</span>
+                </div>
+                <div class="p-stat-item" style="border-left:1px solid #555; padding-left:10px; margin-left:10px;">
+                    <span class="p-stat-label" style="color:var(--accent-gold);">GOAL</span>
+                    <span id="p-goal-val" class="p-stat-val" style="color:#fff;">5</span>
                 </div>
             </div>
-            <div class="party-compare-row">
-                <div class="party-compare-item">
-                    <p class="compare-label">TARGET</p>
-                    <div id="party-ans-color" class="mini-box"></div><span id="party-ans-text" style="font-size:0.6rem;"></span>
+
+            <div class="party-compare-container">
+                <div class="party-players-row">
+                    <div class="party-compare-item">
+                        <p class="compare-label" id="party-label-p1">P1</p>
+                        <div id="party-p1-color" class="mini-box"></div><span id="party-p1-text" style="font-size:0.6rem;"></span>
+                    </div>
+                    <div class="party-compare-item">
+                        <p class="compare-label" id="party-label-p2">P2</p>
+                        <div id="party-p2-color" class="mini-box"></div><span id="party-p2-text" style="font-size:0.6rem;"></span>
+                    </div>
+                    <div class="party-compare-item">
+                        <p class="compare-label" id="party-label-p3">P3</p>
+                        <div id="party-p3-color" class="mini-box"></div><span id="party-p3-text" style="font-size:0.6rem;"></span>
+                    </div>
                 </div>
-                <div class="party-compare-item">
-                    <p class="compare-label" id="party-label-p1">P1</p>
-                    <div id="party-p1-color" class="mini-box"></div><span id="party-p1-text" style="font-size:0.6rem;"></span>
-                </div>
-                <div class="party-compare-item">
-                    <p class="compare-label" id="party-label-p2">P2</p>
-                    <div id="party-p2-color" class="mini-box"></div><span id="party-p2-text" style="font-size:0.6rem;"></span>
-                </div>
-                <div class="party-compare-item">
-                    <p class="compare-label" id="party-label-p3">P3</p>
-                    <div id="party-p3-color" class="mini-box"></div><span id="party-p3-text" style="font-size:0.6rem;"></span>
+                <div class="party-target-row">
+                    <div class="party-compare-item">
+                        <p class="compare-label">TARGET</p>
+                        <div id="party-ans-color" class="mini-box"></div><span id="party-ans-text" style="font-size:0.6rem;"></span>
+                    </div>
                 </div>
             </div>
 
