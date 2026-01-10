@@ -277,3 +277,40 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .party-compare-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
 .party-compare-item { width: 23%; min-width: 70px; text-align: center; }
 .party-compare-item .mini-box { width: 100%; aspect-ratio: 1; border-radius: 8px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.2); }
+
+
+
+/* ▼ Party Stats Styles */
+.party-stats-container {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-around;
+    font-family: var(--font-mono);
+}
+.p-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.p-stat-label {
+    font-size: 0.7rem;
+    color: #888;
+    margin-bottom: 2px;
+}
+.p-stat-val {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-party);
+}
+.p-stat-name-disp {
+    font-size: 0.7rem;
+    color: #ccc;
+    max-width: 60px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

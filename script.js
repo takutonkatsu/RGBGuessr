@@ -765,7 +765,7 @@ window.onload = function() {
 
 
 
-// ▼ 6. PARTY BATTLE MODE (3 Players)
+// ▼ 6. PARTY BATTLE MODE (3 Players) - 戦績表示＆安定化版
 const partyGame = {
     roomId: null, role: null, roomRef: null,
     myName: "Player", 
@@ -780,12 +780,11 @@ const partyGame = {
         this.roomId = Math.floor(1000 + Math.random() * 9000).toString();
         this.roomRef = db.ref('rooms/' + this.roomId);
         
-        // 3人分のスロットを用意
         this.roomRef.set({
             state: 'waiting', question: utils.randColor(), round: 1,
             host: { name: this.myName, status: 'waiting', score: 0 },
             guest: { name: '', status: 'waiting', score: 0 },
-            guest2: { name: '', status: 'waiting', score: 0 }, // 3人目
+            guest2: { name: '', status: 'waiting', score: 0 },
             wins: { host: 0, guest: 0, guest2: 0 }
         });
         this.roomRef.onDisconnect().remove();
@@ -812,7 +811,6 @@ const partyGame = {
             if(snapshot.exists()) {
                 const data = snapshot.val();
                 
-                // 空いている枠を探す
                 if (!data.guest || !data.guest.name) {
                     this.role = 'guest';
                 } else if (!data.guest2 || !data.guest2.name) {
@@ -824,8 +822,6 @@ const partyGame = {
                 this.roomRef.child(this.role).update({ name: this.myName, status: 'waiting' });
                 this.roomRef.child(this.role).onDisconnect().remove();
                 
-                // 3人揃ったらplayingへ（hostのみが判定してもいいが、単純化のためここで人数チェック）
-                // ※厳密にはListen内でHostがstate変更するのが安全だが、簡易実装
                 if(data.host && data.guest && this.role === 'guest2') {
                     this.roomRef.update({ state: 'playing' });
                 }
@@ -840,26 +836,24 @@ const partyGame = {
             const data = snapshot.val();
             if(!data) { app.alert("Connection lost / Room closed", () => { this.exitRoom(true); }); return; }
 
-            // ロビーでの名前表示更新
+            // ロビー表示
             if(data.host) document.getElementById('party-p1-name').innerText = "Host: " + data.host.name;
             if(data.guest && data.guest.name) document.getElementById('party-p2-name').innerText = "Guest 1: " + data.guest.name;
             else document.getElementById('party-p2-name').innerText = "Guest 1: (Waiting...)";
             if(data.guest2 && data.guest2.name) document.getElementById('party-p3-name').innerText = "Guest 2: " + data.guest2.name;
             else document.getElementById('party-p3-name').innerText = "Guest 2: (Waiting...)";
 
-            // 人数カウント
             let count = 0;
             if(data.host) count++;
             if(data.guest && data.guest.name) count++;
             if(data.guest2 && data.guest2.name) count++;
             document.getElementById('party-status-text').innerText = `Waiting for players (${count}/3)...`;
 
-            // Host側: 3人揃ったら playing にする（遅れて入った人のために再確認）
             if (this.role === 'host' && data.state === 'waiting' && count === 3) {
                  this.roomRef.update({ state: 'playing' });
             }
 
-            // ゲーム進行管理
+            // ゲーム終了判定を最優先
             if (data.state === 'finished') {
                 this.showResult(data);
                 return;
@@ -872,11 +866,11 @@ const partyGame = {
                     this.startRound(data);
                 }
 
-                // 相手のステータス表示
+                // 回答待ち状況の表示（データ存在チェック付き）
                 let waitingCount = 0;
-                if (data.host.status !== 'guessed') waitingCount++;
-                if (data.guest.status !== 'guessed') waitingCount++;
-                if (data.guest2.status !== 'guessed') waitingCount++;
+                if (data.host && data.host.status !== 'guessed') waitingCount++;
+                if (data.guest && data.guest.status !== 'guessed') waitingCount++;
+                if (data.guest2 && data.guest2.status !== 'guessed') waitingCount++;
                 
                 const statusEl = document.getElementById('party-opponent-status');
                 if (waitingCount === 0) {
@@ -887,10 +881,13 @@ const partyGame = {
                     statusEl.style.background = "rgba(0, 210, 211, 0.1)"; statusEl.style.color = "var(--primary-party)";
                 }
 
-                // Hostが全員の回答を確認したら集計
+                // Hostによる集計
                 if (this.role === 'host') {
-                    if (data.host.status === 'guessed' && data.guest.status === 'guessed' && data.guest2.status === 'guessed') {
-                        this.calcResult(data);
+                    // 安全のため全員のデータがあるか確認
+                    if (data.host && data.guest && data.guest2) {
+                        if (data.host.status === 'guessed' && data.guest.status === 'guessed' && data.guest2.status === 'guessed') {
+                            this.calcResult(data);
+                        }
                     }
                 }
             }
@@ -948,12 +945,13 @@ const partyGame = {
         const s2 = calcScore(data.guest.color);
         const s3 = calcScore(data.guest2.color);
         
-        // 勝利数カウント（1位のみ加算）
         let newWins = data.wins || { host: 0, guest: 0, guest2: 0 };
         const maxScore = Math.max(s1, s2, s3);
+        
+        // 同点1位も考慮して勝利カウント
         if(s1 === maxScore) newWins.host++;
-        else if(s2 === maxScore) newWins.guest++;
-        else if(s3 === maxScore) newWins.guest2++;
+        if(s2 === maxScore) newWins.guest++;
+        if(s3 === maxScore) newWins.guest2++;
         
         this.roomRef.update({ 
             'host/score': s1, 'guest/score': s2, 'guest2/score': s3, 
@@ -966,73 +964,92 @@ const partyGame = {
             app.showScreen('party-result');
         }
 
-        // データの整理とソート
+        // ▼ データ安全策: 各プレイヤーが存在しない場合のダミーを用意
+        const safeData = (pKey) => {
+            if (data[pKey] && data[pKey].name) return data[pKey];
+            return { name: "---", score: 0, color: {r:0, g:0, b:0, hex:'#000'}, status:'waiting' };
+        };
+        const hData = safeData('host');
+        const g1Data = safeData('guest');
+        const g2Data = safeData('guest2');
+
         const players = [
-            { key: 'host', name: data.host.name, score: data.host.score, color: data.host.color, me: (this.role === 'host') },
-            { key: 'guest', name: data.guest.name, score: data.guest.score, color: data.guest.color, me: (this.role === 'guest') },
-            { key: 'guest2', name: data.guest2.name, score: data.guest2.score, color: data.guest2.color, me: (this.role === 'guest2') }
+            { key: 'host', name: hData.name, score: hData.score, color: hData.color, me: (this.role === 'host') },
+            { key: 'guest', name: g1Data.name, score: g1Data.score, color: g1Data.color, me: (this.role === 'guest') },
+            { key: 'guest2', name: g2Data.name, score: g2Data.score, color: g2Data.color, me: (this.role === 'guest2') }
         ];
 
         // スコア順にソート
         players.sort((a, b) => b.score - a.score);
 
         // 順位表示
-        // 1位
-        document.getElementById('party-name-1').innerText = players[0].name;
-        document.getElementById('party-score-1').innerText = players[0].score;
-        document.getElementById('party-you-1').innerText = players[0].me ? "(YOU)" : "";
-        // 2位
-        document.getElementById('party-name-2').innerText = players[1].name;
-        document.getElementById('party-score-2').innerText = players[1].score;
-        // 3位
-        document.getElementById('party-name-3').innerText = players[2].name;
-        document.getElementById('party-score-3').innerText = players[2].score;
+        if(players[0]) {
+            document.getElementById('party-name-1').innerText = players[0].name;
+            document.getElementById('party-score-1').innerText = players[0].score;
+            document.getElementById('party-you-1').innerText = players[0].me ? "(YOU)" : "";
+        }
+        if(players[1]) {
+            document.getElementById('party-name-2').innerText = players[1].name;
+            document.getElementById('party-score-2').innerText = players[1].score;
+        }
+        if(players[2]) {
+            document.getElementById('party-name-3').innerText = players[2].name;
+            document.getElementById('party-score-3').innerText = players[2].score;
+        }
 
-        // タイトル判定
+        // タイトル
         const myRank = players.findIndex(p => p.me);
         const title = document.getElementById('party-result-title');
         if (myRank === 0) { title.innerText = "WINNER!"; title.style.color = "var(--accent-gold)"; }
         else { title.innerText = (myRank+1) + "rd PLACE"; title.style.color = "#fff"; }
 
-        // 色比較エリアの更新
+        // 戦績表示 (Win Count)
+        const wins = data.wins || { host: 0, guest: 0, guest2: 0 };
+        document.getElementById('p-win-host').innerText = wins.host;
+        document.getElementById('p-name-host').innerText = hData.name;
+        
+        document.getElementById('p-win-guest').innerText = wins.guest;
+        document.getElementById('p-name-guest').innerText = g1Data.name;
+        
+        document.getElementById('p-win-guest2').innerText = wins.guest2;
+        document.getElementById('p-name-guest2').innerText = g2Data.name;
+
+        // 色比較エリア
         const q = data.question;
         document.getElementById('party-ans-color').style.backgroundColor = q.hex; 
         document.getElementById('party-ans-text').innerText = `${q.r},${q.g},${q.b}`;
 
-        // 各プレイヤーの色表示（元の定義順で表示する）
-        const setP = (key, pData) => {
+        // 各プレイヤーの色（固定位置）
+        const setP = (key, pData, labelId, colorId, textId) => {
              const c = pData.color;
-             document.getElementById(`party-${key}-color`).style.backgroundColor = c.hex;
-             document.getElementById(`party-${key}-text`).innerText = `${c.r},${c.g},${c.b}`;
-             document.getElementById(`party-label-${key}`).innerText = pData.name.substring(0,3).toUpperCase();
+             document.getElementById(colorId).style.backgroundColor = c.hex;
+             document.getElementById(textId).innerText = `${c.r},${c.g},${c.b}`;
+             document.getElementById(labelId).innerText = pData.name.substring(0,3).toUpperCase();
         };
-        setP('p1', {name: data.host.name, color: data.host.color});
-        setP('p2', {name: data.guest.name, color: data.guest.color});
-        setP('p3', {name: data.guest2.name, color: data.guest2.color});
+        setP('p1', hData, 'party-label-p1', 'party-p1-color', 'party-p1-text');
+        setP('p2', g1Data, 'party-label-p2', 'party-p2-color', 'party-p2-text');
+        setP('p3', g2Data, 'party-label-p3', 'party-p3-color', 'party-p3-text');
 
         // Continueボタン管理
-        const myP = players.find(p => p.me);
-        const myData = data[this.role];
-        
+        const myData = data[this.role] || { status: 'waiting' };
         const btn = document.getElementById('party-continue-btn');
+        
         if (myData.status === 'ready') {
             btn.disabled = true; btn.innerText = "WAITING..."; btn.style.background = "#555"; btn.style.opacity = "0.7";
         } else {
             btn.disabled = false; btn.innerText = "CONTINUE"; btn.style.background = "var(--text-main)"; btn.style.opacity = "1";
         }
 
-        // メッセージ更新
         let readyCount = 0;
-        if(data.host.status === 'ready') readyCount++;
-        if(data.guest.status === 'ready') readyCount++;
-        if(data.guest2.status === 'ready') readyCount++;
+        if(hData.status === 'ready') readyCount++;
+        if(g1Data.status === 'ready') readyCount++;
+        if(g2Data.status === 'ready') readyCount++;
         
         const contMsg = document.getElementById('party-continue-status');
         if(readyCount === 3) contMsg.innerText = "Starting next round...";
         else if(readyCount > 0) contMsg.innerText = `Waiting for players (${readyCount}/3 ready)...`;
         else contMsg.innerText = "";
 
-        // 全員Readyで次へ
         if (readyCount === 3 && this.role === 'host') {
             this.nextRound(data.round + 1);
         }
