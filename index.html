@@ -75,17 +75,17 @@
                 </div>
                 
                 <div class="about-card about-matching">
-                    <h4>MATCHING</h4>
+                    <h4>Matching</h4>
                     <p>問題の色と同じ色を作ってください。色が近いほど高得点になります。素早く回答するとタイムボーナスが加算されます。</p>
                 </div>
 
                 <div class="about-card about-original">
-                    <h4>ORIGINAL</h4>
+                    <h4>Original</h4>
                     <p>問題の色のRGB数値を推測します。色合わせはなく、純粋な数値入力のみのハードモードです。</p>
                 </div>
 
                 <div class="about-card about-challenge">
-                    <h4>CHALLENGE</h4>
+                    <h4>Challenge</h4>
                     <p>全25ステージのクリアを目指します。ステージごとに設定されたGOALスコアを超えると次に進めます。一度でも失敗すると最初からです。</p>
                 </div>
 
@@ -253,6 +253,10 @@
 
 
         <section id="screen-challenge" class="screen fade-in">
+            <div class="game-header">
+                <h2 class="game-title color-challenge">Challenge</h2>
+            </div>
+            
             <div class="challenge-status-bar">
                 <div class="challenge-info-top">
                     <div>
@@ -298,12 +302,12 @@
             <div class="result-score-block">
                 <div class="score-item">
                     <span class="label">SCORE</span>
-                    <span id="challenge-result-score" class="val-score">0</span>
+                    <span id="challenge-result-score" class="val">0</span>
                 </div>
                 <div class="score-divider">/</div>
                 <div class="score-item">
                     <span class="label">GOAL</span>
-                    <span id="challenge-result-goal" class="val-goal">0</span>
+                    <span id="challenge-result-goal" class="val">0</span>
                 </div>
             </div>
 
@@ -329,7 +333,7 @@
 
             <div class="modal-buttons">
                 <button id="challenge-next-btn" onclick="challengeGame.next()" class="btn-primary">NEXT STAGE</button>
-                <button onclick="challengeGame.resetData()" class="btn-text">Reset Data</button>
+                <button onclick="challengeGame.resetData()" class="btn-text">Reset Challenge</button>
             </div>
             
             <div id="challenge-history" class="history-log"></div>
@@ -337,32 +341,39 @@
 
 
         <section id="screen-anotherworld" class="screen fade-in">
-            <h2 class="game-title glitch-text">The Void</h2>
+            <div class="game-header">
+                <h2 class="game-title color-storage">Color Storage</h2>
+            </div>
             
-            <div id="another-input-color" class="color-box large-box" style="border: 1px solid #333;"></div>
+            <div class="single-color-display">
+                <div id="another-input-color" class="color-box large-box"></div>
+            </div>
 
-            <div class="slider-container glass-panel" style="border: 1px solid #333;">
+            <div class="slider-container glass-panel">
                 <div class="slider-row">
                     <label class="label-r">R</label>
-                    <input type="range" id="another-R" class="custom-range range-mono" min="0" max="255" value="128">
+                    <input type="range" id="another-R" class="custom-range range-r" min="0" max="255" value="128">
                     <span id="another-val-R" class="val-num">128</span>
                 </div>
                 <div class="slider-row">
                     <label class="label-g">G</label>
-                    <input type="range" id="another-G" class="custom-range range-mono" min="0" max="255" value="128">
+                    <input type="range" id="another-G" class="custom-range range-g" min="0" max="255" value="128">
                     <span id="another-val-G" class="val-num">128</span>
                 </div>
                 <div class="slider-row">
                     <label class="label-b">B</label>
-                    <input type="range" id="another-B" class="custom-range range-mono" min="0" max="255" value="128">
+                    <input type="range" id="another-B" class="custom-range range-b" min="0" max="255" value="128">
                     <span id="another-val-B" class="val-num">128</span>
                 </div>
             </div>
 
-            <button onclick="anotherGame.saveColor()" class="main-action-btn btn-mono">SAVE COLOR</button>
-            <button onclick="anotherGame.resetData()" class="btn-text" style="color:#666">Reset Memory</button>
+            <button onclick="anotherGame.saveColor()" class="main-action-btn">SAVE COLOR</button>
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button onclick="anotherGame.resetData()" class="btn-text">Reset All Memory</button>
+            </div>
 
-            <div id="another-history" class="history-log" style="color: #666;"></div>
+            <div id="another-history" class="history-log"></div>
         </section>
 
     </main>

@@ -1,5 +1,6 @@
 // ▼ アプリ全体の管理
 const app = {
+    // 裏世界トリガー用カウンタ
     secretCount: 0,
     secretTimer: null,
 
@@ -44,6 +45,7 @@ const app = {
     }
 };
 
+// ▼ 共通ユーティリティ
 const utils = {
     randColor: function() {
         const r = Math.floor(Math.random() * 256);
@@ -59,6 +61,7 @@ const utils = {
     }
 };
 
+// ▼ メニュー画面ロジック
 const menuLogic = {
     init: function() {
         const today = new Date();
@@ -295,25 +298,23 @@ const matchingGame = {
 
             html += `
             <div class="${rowClass}">
-                <div class="history-top-row">
-                    ${indexHtml}
-                    <div class="history-score-area">
-                        <span class="history-score-val">${sc}</span>
-                        <span style="font-size:0.7rem; color:#888;">(${tm}s)</span>
-                        ${ao5Html}
-                    </div>
-                </div>
-                <div class="history-bottom-row">
-                    <div class="color-data-group">
-                        <span class="label-mini">TGT</span>
-                        <span class="chip-mini" style="background:${ansHex}"></span>
+                ${indexHtml}
+                <div class="history-colors">
+                    <div class="color-row">
+                        <span class="label-box" style="color:#aaa">TARGET</span>
+                        <span class="chip-xs" style="background:${ansHex}"></span>
                         <span>${ansTxt}</span>
                     </div>
-                    <div class="color-data-group">
-                        <span class="label-mini">YOU</span>
-                        <span class="chip-mini" style="background:${myHex}"></span>
+                    <div class="color-row">
+                        <span class="label-box" style="color:#fff">YOU</span>
+                        <span class="chip-xs" style="background:${myHex}"></span>
                         <span>${myTxt}</span>
                     </div>
+                </div>
+                <div class="history-right">
+                    <div class="history-score-val">${sc}</div>
+                    <div style="font-size:0.7rem; color:#888;">(${tm}s)</div>
+                    ${ao5Html}
                 </div>
             </div>`;
         }
@@ -516,26 +517,25 @@ const originalGame = {
                 indexHtml = `<span class="history-index">👑</span>`;
             }
 
+            // ★ 修正: 3分割グリッド (TARGETラベル化)
             html += `
             <div class="${rowClass}">
-                <div class="history-top-row">
-                    ${indexHtml}
-                    <div class="history-score-area">
-                        <span class="history-score-val">${sc}</span>
-                        ${ao5Html}
-                    </div>
-                </div>
-                <div class="history-bottom-row">
-                    <div class="color-data-group">
-                        <span class="label-mini">TGT</span>
-                        <span class="chip-mini" style="background:${ansHex}"></span>
+                ${indexHtml}
+                <div class="history-colors">
+                    <div class="color-row">
+                        <span class="label-box" style="color:#aaa">TARGET</span>
+                        <span class="chip-xs" style="background:${ansHex}"></span>
                         <span>${ansTxt}</span>
                     </div>
-                    <div class="color-data-group">
-                        <span class="label-mini">YOU</span>
-                        <span class="chip-mini" style="background:${myHex}"></span>
+                    <div class="color-row">
+                        <span class="label-box" style="color:#fff">YOU</span>
+                        <span class="chip-xs" style="background:${myHex}"></span>
                         <span>${myTxt}</span>
                     </div>
+                </div>
+                <div class="history-right">
+                    <div class="history-score-val">${sc}</div>
+                    ${ao5Html}
                 </div>
             </div>`;
         }
@@ -728,26 +728,25 @@ const challengeGame = {
             if(sc) {
                 const stNum = i.toString().padStart(2, '0');
                 
+                // ★ 修正: Challengeも3分割グリッド (TARGETラベル化)
                 html += `
                 <div class="history-item">
-                    <div class="history-top-row">
-                        <span class="stage-badge-history">STAGE ${stNum}</span>
-                        <div class="history-score-area">
-                            <span class="history-score-val">${sc}</span>
-                            <span class="history-goal-text">GOAL ${goal}</span>
-                        </div>
-                    </div>
-                    <div class="history-bottom-row">
-                        <div class="color-data-group">
-                            <span class="label-mini">TGT</span>
-                            <span class="chip-mini" style="background:${ansHex}"></span>
+                    <div class="history-index" style="width:auto; min-width:30px;"><span class="stage-badge-history">${stNum}</span></div>
+                    <div class="history-colors">
+                        <div class="color-row">
+                            <span class="label-box" style="color:#aaa">TARGET</span>
+                            <span class="chip-xs" style="background:${ansHex}"></span>
                             <span>${ansTxt}</span>
                         </div>
-                        <div class="color-data-group">
-                            <span class="label-mini">YOU</span>
-                            <span class="chip-mini" style="background:${myHex}"></span>
+                        <div class="color-row">
+                            <span class="label-box" style="color:#fff">YOU</span>
+                            <span class="chip-xs" style="background:${myHex}"></span>
                             <span>${myTxt}</span>
                         </div>
+                    </div>
+                    <div class="history-right">
+                        <div class="history-score-val">${sc}</div>
+                        <div class="history-goal-text">GOAL ${goal}</div>
                     </div>
                 </div>`;
             }
@@ -755,24 +754,9 @@ const challengeGame = {
         document.getElementById('challenge-history').innerHTML = html;
     },
 
-    // ★ 修正: Reset DataでMax Stageも削除するように変更
     resetData: function() {
-        if(confirm("チャレンジモードの全記録（MAX STAGE含む）を削除しますか？")) {
-            for(let i=1; i<=26; i++) {
-                localStorage.removeItem("4stage_number"+i);
-                localStorage.removeItem("4answer_rgb16_"+i);
-                localStorage.removeItem("4input_rgb16_"+i);
-                localStorage.removeItem("4answer_rgb_"+i);
-                localStorage.removeItem("4input_rgb_"+i);
-            }
-            localStorage.removeItem("4stage_number");
-            localStorage.removeItem("4RGB_Temporary_Hex");
-            localStorage.removeItem("4stage_record"); // ★ Max Stageも削除
-
-            this.currentStage = 1;
-            this.setupStage();
-            this.updateHistory();
-            app.showScreen('challenge');
+        if(confirm("リセットしますか？")) {
+            this.quickRestart();
         }
     }
 };

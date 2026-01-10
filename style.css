@@ -45,7 +45,7 @@ body {
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Header & Menu */
+/* Header */
 .app-header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 20px; max-width: 800px; margin: 0 auto; width: 100%;
@@ -56,11 +56,9 @@ body {
 .logo-light { color: var(--text-muted); font-weight: 400; }
 .logo-pro { color: var(--accent-green); text-shadow: 0 0 10px rgba(46, 213, 115, 0.3); }
 .logo-god { color: var(--accent-gold); text-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
-
-/* 文字単位の色指定 */
-.char-r, .logo-r { color: var(--accent-red); text-shadow: 0 0 8px rgba(255, 71, 87, 0.5); }
-.char-g, .logo-g { color: var(--accent-green); text-shadow: 0 0 8px rgba(46, 213, 115, 0.5); }
-.char-b, .logo-b { color: var(--accent-blue); text-shadow: 0 0 8px rgba(55, 66, 250, 0.5); }
+.logo-r, .char-r { color: var(--accent-red); text-shadow: 0 0 8px rgba(255, 71, 87, 0.4); }
+.logo-g, .char-g { color: var(--accent-green); text-shadow: 0 0 8px rgba(46, 213, 115, 0.4); }
+.logo-b, .char-b { color: var(--accent-blue); text-shadow: 0 0 8px rgba(55, 66, 250, 0.4); }
 
 .nav-btn {
     background: var(--panel-glass); border: 1px solid var(--panel-border);
@@ -69,12 +67,12 @@ body {
 }
 .nav-btn:hover { background: rgba(255,255,255,0.1); }
 
+/* Hero */
 .hero-section { text-align: center; margin: 30px 0 50px; }
 .hero-subtitle { color: var(--text-muted); letter-spacing: 2px; font-size: 0.8rem; text-transform: uppercase; }
 .hero-title { 
     font-size: clamp(2rem, 8vw, 3.5rem); margin: 0; line-height: 1.1; white-space: nowrap; 
 }
-/* RGB文字の間隔 */
 .hero-title span { margin: 0 1px; }
 
 .menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 40px; }
@@ -102,16 +100,10 @@ body {
 }
 .record-badge span { color: var(--accent-yellow); font-weight: bold; }
 
-/* 説明欄 */
+/* Explanation */
 .about-section { border-top: 1px solid var(--panel-border); padding-top: 30px; margin-top: 20px; }
-.about-title {
-    font-size: 1rem; color: var(--text-muted); font-weight: bold;
-    margin-bottom: 15px; text-align: center; letter-spacing: 1px;
-}
-.about-card {
-    background: var(--panel-glass); border: 1px solid var(--panel-border);
-    border-radius: 12px; padding: 20px; margin-bottom: 15px; position: relative; overflow: hidden;
-}
+.about-title { font-size: 1rem; color: var(--text-muted); font-weight: bold; margin-bottom: 15px; text-align: center; letter-spacing: 1px; }
+.about-card { background: var(--panel-glass); border: 1px solid var(--panel-border); border-radius: 12px; padding: 20px; margin-bottom: 15px; position: relative; overflow: hidden; }
 .about-card.about-matching { border-left: 4px solid var(--accent-red); }
 .about-card.about-original { border-left: 4px solid var(--accent-green); }
 .about-card.about-challenge { border-left: 4px solid var(--accent-blue); }
@@ -119,7 +111,7 @@ body {
 .about-card p { margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
 .ao5-highlight { color: var(--accent-yellow); font-weight: bold; font-family: var(--font-mono); }
 
-/* フッター */
+/* Footer */
 .app-footer {
     text-align: center; padding: 30px 0 40px; margin-top: auto;
     border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3);
@@ -135,20 +127,18 @@ body {
 /* Game UI */
 .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .game-title { 
-    margin: 0; font-size: 1.5rem; letter-spacing: -1px; 
-    padding-left: 15px; border-left: 5px solid transparent; line-height: 1.1;
+    margin: 0; font-size: 1.5rem; letter-spacing: -1px; padding-left: 15px; border-left: 5px solid transparent; line-height: 1.1;
 }
 .color-matching { border-left-color: var(--accent-red); }
 .color-original { border-left-color: var(--accent-green); }
 .color-challenge { border-left-color: var(--accent-blue); }
+.color-storage { border-left-color: #888; }
 
 .digital-timer { font-family: var(--font-mono); font-size: 1.5rem; color: var(--text-main); }
-
 .glass-panel {
     background: var(--panel-glass); border: 1px solid var(--panel-border);
     backdrop-filter: blur(12px); border-radius: 20px; padding: 20px; margin-bottom: 20px;
 }
-
 .color-display-area { display: flex; gap: 15px; margin-bottom: 20px; }
 .color-panel { flex: 1; text-align: center; }
 .panel-label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
@@ -161,11 +151,10 @@ body {
 .large-box { aspect-ratio: 16 / 9; height: 150px; margin-bottom: 20px; }
 .overlay-text {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    font-size: 3rem; opacity: 0.2; font-weight: bold; color: #fff;
-    pointer-events: none; /* クリックを邪魔しない */
+    font-size: 3rem; opacity: 0.2; font-weight: bold;
 }
 
-/* スライダー */
+/* Slider */
 .slider-container { padding: 25px 20px; }
 .slider-row { display: flex; align-items: center; margin-bottom: 25px; height: 30px; }
 .slider-row:last-child { margin-bottom: 0; }
@@ -187,13 +176,14 @@ body {
 .range-b { background: linear-gradient(to right, #333, var(--accent-blue)); }
 .range-mono { background: linear-gradient(to right, #333, #fff); }
 
+/* Center Thumb Logic */
 .custom-range::-webkit-slider-thumb {
     appearance: none; -webkit-appearance: none;
     width: 22px; height: 22px; border-radius: 50%; background: #fff; cursor: pointer;
-    box-shadow: none; border: 3px solid var(--bg-dark); margin-top: -9px; transition: transform 0.1s;
+    box-shadow: none; border: 3px solid var(--bg-dark); 
+    margin-top: -9px; transition: transform 0.1s;
 }
 .custom-range::-webkit-slider-thumb:active { transform: scale(1.2); }
-
 .val-num { width: 40px; text-align: right; font-family: var(--font-mono); font-size: 1.1rem; color: var(--text-main); font-weight: bold; flex-shrink: 0; }
 
 .main-action-btn {
@@ -237,26 +227,29 @@ body {
 .btn-primary { background: var(--text-main); color: var(--bg-dark); border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
 .btn-text { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; text-decoration: underline; }
 
-/* 履歴リスト */
+/* ▼▼▼ History List (Grid 3-Column Fixed) ▼▼▼ */
 .history-log { margin-top: 20px; text-align: left; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
 
 .history-item {
     display: grid;
-    /* [番号40px] [色(残り全部)] [スコア75px] */
-    grid-template-columns: 40px 1fr 75px;
-    gap: 5px;
-    align-items: center;
-    padding: 12px 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    /* [番号:40px] [色:残り] [スコア:90px] */
+    grid-template-columns: 40px 1fr 90px;
+    gap: 8px; align-items: center;
+    padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
     background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 5px;
 }
 .history-item.best-record { background: linear-gradient(90deg, rgba(255, 165, 2, 0.1), transparent); border-left: 3px solid var(--accent-yellow); }
+
+.history-index { 
+    font-size: 0.9rem; color: #666; font-family: var(--font-mono); text-align: left;
+    grid-column: 1; /* グリッド位置指定 */
+}
 .history-item.best-record .history-index { color: var(--accent-yellow); font-weight: bold; }
-.history-item.best-record .history-score-val { color: var(--accent-yellow); }
 
-.history-index { font-size: 0.9rem; color: #666; font-family: var(--font-mono); text-align: left; }
-
-.history-colors { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.history-colors { 
+    display: flex; flex-direction: column; gap: 4px; min-width: 0;
+    grid-column: 2; /* グリッド位置指定 */
+}
 .color-row { 
     display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted); 
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
@@ -270,19 +263,18 @@ body {
 .history-right { 
     text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px;
     border-left: 1px solid rgba(255,255,255,0.05); padding-left: 3px;
+    grid-column: 3; /* グリッド位置指定 */
+    width: 100%; /* 親グリッド枠いっぱい */
 }
 .history-score-val { font-size: 1.1rem; font-weight: bold; color: #fff; font-family: var(--font-mono); line-height: 1; }
+.history-item.best-record .history-score-val { color: var(--accent-yellow); }
 
 .history-ao5-badge {
     font-size: 0.65rem; color: var(--bg-dark); background: var(--text-muted);
     padding: 1px 5px; border-radius: 4px; font-weight: bold; display: inline-block; white-space: nowrap; margin-top: 3px;
 }
-.history-ao5-badge.highlight {
-    background: var(--accent-yellow); color: #000; box-shadow: 0 0 5px rgba(255, 165, 2, 0.5);
-}
-.history-ao5-badge.placeholder {
-    background: transparent; color: #444; border: 1px solid #333;
-}
+.history-ao5-badge.highlight { background: var(--accent-yellow); color: #000; box-shadow: 0 0 5px rgba(255, 165, 2, 0.5); }
+.history-ao5-badge.placeholder { background: transparent; color: #444; border: 1px solid #333; }
 
 /* Challenge Status */
 .challenge-status-bar {
@@ -302,20 +294,13 @@ body {
 .goal-label { font-size: 0.7rem; color: var(--text-muted); }
 .goal-val { font-size: 1.2rem; color: var(--accent-green); font-family: var(--font-mono); font-weight: bold; }
 
-/* Challenge Result Block */
 .result-score-block {
     display: flex; justify-content: center; align-items: center; gap: 20px;
     margin: 10px 0; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);
 }
 .score-item { display: flex; flex-direction: column; align-items: center; }
-
-/* ★ 修正: ScoreとGoalのデザインを分ける */
 .score-item .label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 1px; }
-/* Scoreは大きく強調 */
-.val-score { font-size: 1.8rem; font-family: var(--font-mono); font-weight: bold; color: var(--accent-yellow); text-shadow: 0 0 10px rgba(255, 165, 2, 0.3); }
-/* Goalは少し控えめに */
-.val-goal { font-size: 1.2rem; font-family: var(--font-mono); font-weight: bold; color: #aaa; }
-
+.score-item .val { font-size: 1.5rem; font-family: var(--font-mono); font-weight: bold; color: #fff; }
 .score-divider { font-size: 1.5rem; color: var(--text-muted); opacity: 0.3; }
 
 .history-goal-text { font-size: 0.65rem; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; margin-top: 2px;}
