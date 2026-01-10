@@ -13,7 +13,8 @@
     --accent-blue: #3742fa;
     --accent-yellow: #ffa502;
     --accent-gold: #ffd700;
-    --primary-friend: #9c88ff; 
+    --primary-friend: #9c88ff;
+    --primary-trio: #00d2d3; /* Trio Mode Color (Cyan) */
 
     --font-ui: 'Inter', 'Noto Sans JP', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
@@ -55,6 +56,7 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .card-original::before { background: var(--accent-green); }
 .card-challenge::before { background: var(--accent-blue); }
 .card-friend::before { background: var(--primary-friend); }
+.card-trio::before { background: var(--primary-trio); } /* Trio CSS */
 
 .card-icon { font-size: 2rem; margin-right: 20px; }
 .card-content h3 { margin: 0; font-size: 1.2rem; }
@@ -88,6 +90,7 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .color-challenge { border-left-color: var(--accent-blue); }
 .color-storage { border-left-color: #888; }
 .color-friend { border-left-color: var(--primary-friend); }
+.color-trio { border-left-color: var(--primary-trio); }
 
 .digital-timer { font-family: var(--font-mono); font-size: 1.5rem; color: var(--text-main); }
 .glass-panel { background: var(--panel-glass); border: 1px solid var(--panel-border); backdrop-filter: blur(12px); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
@@ -131,7 +134,6 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .stat-value.highlight { color: var(--accent-yellow); text-shadow: 0 0 10px rgba(255, 165, 2, 0.3); }
 .modal-buttons { display: grid; gap: 15px; margin-bottom: 30px; padding: 0 20px; }
 .btn-primary { background: var(--text-main); color: var(--bg-dark); border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
-/* ★ 修正: Continue待機中のボタンスタイル */
 .btn-primary:disabled { background: #555; color: #888; cursor: not-allowed; opacity: 0.7; }
 .btn-text { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; text-decoration: underline; }
 
@@ -139,7 +141,6 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .history-log { margin-top: 20px; text-align: left; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
 .history-item { 
     display: grid; 
-    /* ★ 修正: Challengeの左端が狭すぎないように調整 (50px) */
     grid-template-columns: 50px 1fr 90px;
     gap: 8px; align-items: center; padding: 12px 10px; 
     border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 5px; 
@@ -206,6 +207,27 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .f-stat-total { font-size: 1.4rem; font-weight: bold; color: #fff; margin: 0 10px; }
 .f-stat-label { font-size: 0.8rem; color: #666; font-weight: bold; }
 
+/* ▼▼▼ TRIO SPECIFIC ▼▼▼ */
+.trio-status-container {
+    display: flex; justify-content: space-between; gap: 10px; margin-bottom: 15px;
+}
+.trio-status-box {
+    flex: 1; text-align: center;
+    background: rgba(0, 210, 211, 0.1); color: var(--primary-trio);
+    padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: bold;
+    border: 1px solid rgba(0, 210, 211, 0.2);
+}
+.trio-result-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;
+}
+.trio-res-col {
+    display: flex; flex-direction: column; align-items: center;
+    background: rgba(255,255,255,0.05); padding: 10px 5px; border-radius: 10px;
+}
+.trio-rank { font-size: 1.2rem; font-weight: 900; color: var(--primary-trio); }
+.trio-score { font-size: 1.5rem; font-family: var(--font-mono); font-weight: bold; margin: 5px 0; }
+.trio-name { font-size: 0.7rem; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
 /* Custom Modals */
 .custom-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s; }
 .custom-modal-box { background: #1a1d24; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.7); }
@@ -217,3 +239,41 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .glitch-btn:hover { background: #111; border-color: #555; text-shadow: 2px 0 red, -2px 0 blue; }
 .glitch-text { text-shadow: 2px 0 red, -2px 0 blue; }
 .btn-mono { background: #333; box-shadow: none; border: 1px solid #555; }
+
+
+
+
+
+
+
+
+
+
+
+
+/* ▼ Party Mode (3 Players) Styles */
+:root {
+    --primary-party: #00d2d3; /* Partyモードのテーマカラー */
+}
+
+.card-party::before { background: var(--primary-party); }
+.color-party { border-left-color: var(--primary-party); }
+
+/* 3人用のリザルト表示レイアウト */
+.party-result-main {
+    display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin-bottom: 20px;
+}
+.p-res-box { display: flex; flex-direction: column; align-items: center; width: 30%; position: relative; }
+.p-res-rank { font-size: 1.5rem; font-weight: 900; font-style: italic; margin-bottom: 5px; }
+.rank-1 { color: var(--accent-gold); font-size: 2rem; }
+.rank-2 { color: #c0c0c0; }
+.rank-3 { color: #cd7f32; }
+
+.p-res-score { font-size: 1.5rem; font-weight: bold; font-family: var(--font-mono); color: #fff; line-height: 1; }
+.p-res-name { font-size: 0.7rem; color: #aaa; margin-top: 5px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.p-res-you { color: var(--accent-green); font-size: 0.6rem; letter-spacing: 1px; }
+
+/* 3人用の比較エリア */
+.party-compare-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+.party-compare-item { width: 23%; min-width: 70px; text-align: center; }
+.party-compare-item .mini-box { width: 100%; aspect-ratio: 1; border-radius: 8px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.2); }

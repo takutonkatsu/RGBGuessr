@@ -19,8 +19,7 @@
     <meta property="og:url" content="https://takuto1014.github.io/RGBGuessr/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="RGBGuessr">
-    <meta property="og:description" content="世界中で空前絶後の大ブーム！今すぐRGBGuessrをプレイしよう
-    ！">
+    <meta property="og:description" content="世界中で空前絶後の大ブーム！今すぐRGBGuessrをプレイしよう！">
     <meta property="og:site_name" content="RGBGuessr">
     <meta property="og:image" content="https://takuto1014.github.io/RGBGuessr/RgbGuessr共有.png">
 
@@ -84,6 +83,15 @@
                         <div class="record-badge">ONLINE</div>
                     </div>
                 </div>
+                <div class="game-card card-party" onclick="app.startGame('party')">
+                    <div class="card-icon">🎉</div>
+                    <div class="card-content">
+                        <h3>Party Battle</h3>
+                        <p>3人で競うカオスな対戦</p>
+                        <div class="record-badge">3 PLAYERS</div>
+                    </div>
+                </div>
+            </div>
             </div>
 
             <div id="another-world-entrance" class="hidden text-center" style="margin-top: 40px;">
@@ -113,6 +121,10 @@
                 <div class="about-card about-friend">
                     <h4>Friend Battle</h4>
                     <p>同じ色彩・同じ瞬間に挑む、リアルタイム1vs1。相手より正確に、より鋭く。言葉不要の感性をぶつけ合う、スリリングな対戦モード。</p>
+                </div>
+                <div class="about-card about-friend" style="border-left-color: var(--primary-party);">
+                    <h4>Party Battle</h4>
+                    <p>3人同時のバトルロイヤル。1位のみが勝者となる過酷なルール。自分以外の2人の色も見極めながら、RGBの覇者を目指せ。</p>
                 </div>
                 <div class="about-card">
                     <h4>Ao5 System</h4>
@@ -250,6 +262,104 @@
                 <button onclick="friendGame.confirmExit()" class="btn-text">Exit Room</button>
             </div>
             <p id="friend-continue-status" style="color:#888; font-size:0.8rem; margin-top:-10px; min-height:1.2em;"></p>
+        </section>
+        <section id="screen-party-menu" class="screen fade-in" style="text-align:center;">
+            <div class="game-header"><h2 class="game-title color-party">Party Battle</h2></div>
+            <div class="friend-name-area">
+                <p class="input-label">YOUR NAME (Max 6)</p>
+                <input type="text" id="party-name-input" maxlength="6" placeholder="Player" class="name-input">
+            </div>
+            <div class="menu-grid">
+                <div class="game-card" style="border-color:var(--primary-party);" onclick="partyGame.createRoom()">
+                    <div class="card-icon">🏠</div><div class="card-content"><h3>CREATE ROOM</h3><p>3人部屋を作成</p></div>
+                </div>
+                <div class="game-card" style="border-color:var(--primary-party);" onclick="partyGame.showJoinScreen()">
+                    <div class="card-icon">🔑</div><div class="card-content"><h3>JOIN ROOM</h3><p>部屋番号で参加</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-party-join" class="screen fade-in" style="text-align:center;">
+            <div class="game-header"><h2 class="game-title color-party">Join Party</h2></div>
+            <p>Enter 4-digit Room ID</p>
+            <input type="number" id="party-room-input" placeholder="0000" class="room-id-input" style="border-bottom-color:var(--primary-party);">
+            <button class="main-action-btn" onclick="partyGame.joinRoom()">JOIN</button>
+        </section>
+
+        <section id="screen-party-lobby" class="screen fade-in" style="text-align:center;">
+            <div class="game-header"><h2 class="game-title color-party">Lobby</h2></div>
+            <p>Share this Room ID</p>
+            <div id="party-room-id-display" class="room-id-display" style="color:var(--primary-party);">----</div>
+            <div class="loading-spinner" style="border-left-color:var(--primary-party);"></div>
+            <p id="party-status-text" class="status-text">Waiting for players (1/3)...</p>
+            <div style="margin-top:20px; font-size:0.9rem; color:#aaa;">
+                <p id="party-p1-name">Host: ---</p>
+                <p id="party-p2-name">Guest 1: ---</p>
+                <p id="party-p3-name">Guest 2: ---</p>
+            </div>
+        </section>
+
+        <section id="screen-party-battle" class="screen fade-in">
+            <div class="game-header"><h2 class="game-title color-party">Party</h2><div id="party-round-display" class="digital-timer" style="font-size:1rem;">Round 1</div></div>
+            <div id="party-opponent-status" class="opponent-status-bar" style="background:rgba(0, 210, 211, 0.1); color:var(--primary-party); border-color:rgba(0, 210, 211, 0.2);">
+                Waiting for others...
+            </div>
+            <div class="single-color-display"><div id="party-question-color" class="color-box large-box"><span class="overlay-text">?</span></div></div>
+            <div class="slider-container glass-panel">
+                <div class="slider-row"><label class="label-r">R</label><input type="range" id="party-R" class="custom-range range-r" min="0" max="255" value="128"><span id="party-val-R" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-g">G</label><input type="range" id="party-G" class="custom-range range-g" min="0" max="255" value="128"><span id="party-val-G" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-b">B</label><input type="range" id="party-B" class="custom-range range-b" min="0" max="255" value="128"><span id="party-val-B" class="val-num">128</span></div>
+            </div>
+            <button id="party-guess-btn" class="main-action-btn" onclick="partyGame.submitGuess()">GUESS</button>
+            <p id="party-wait-msg" class="hidden" style="text-align:center; color:#888;">Waiting for others...</p>
+        </section>
+
+        <section id="screen-party-result" class="screen fade-in result-screen">
+            <h2 id="party-result-title" class="result-title-big">RESULT</h2>
+
+            <div class="party-result-main">
+                <div class="p-res-box order-2">
+                    <span class="p-res-rank rank-2">2nd</span>
+                    <span id="party-score-2" class="p-res-score">0</span>
+                    <span id="party-name-2" class="p-res-name">Player2</span>
+                </div>
+                <div class="p-res-box order-1">
+                    <span class="p-res-rank rank-1">1st</span>
+                    <span id="party-score-1" class="p-res-score">0</span>
+                    <span id="party-name-1" class="p-res-name">Player1</span>
+                    <span id="party-you-1" class="p-res-you"></span>
+                </div>
+                <div class="p-res-box order-3">
+                    <span class="p-res-rank rank-3">3rd</span>
+                    <span id="party-score-3" class="p-res-score">0</span>
+                    <span id="party-name-3" class="p-res-name">Player3</span>
+                </div>
+            </div>
+
+            <div class="party-compare-row">
+                <div class="party-compare-item">
+                    <p class="compare-label">TARGET</p>
+                    <div id="party-ans-color" class="mini-box"></div><span id="party-ans-text" style="font-size:0.6rem;"></span>
+                </div>
+                <div class="party-compare-item">
+                    <p class="compare-label" id="party-label-p1">P1</p>
+                    <div id="party-p1-color" class="mini-box"></div><span id="party-p1-text" style="font-size:0.6rem;"></span>
+                </div>
+                <div class="party-compare-item">
+                    <p class="compare-label" id="party-label-p2">P2</p>
+                    <div id="party-p2-color" class="mini-box"></div><span id="party-p2-text" style="font-size:0.6rem;"></span>
+                </div>
+                <div class="party-compare-item">
+                    <p class="compare-label" id="party-label-p3">P3</p>
+                    <div id="party-p3-color" class="mini-box"></div><span id="party-p3-text" style="font-size:0.6rem;"></span>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="party-continue-btn" onclick="partyGame.voteContinue()" class="btn-primary">CONTINUE</button>
+                <button onclick="partyGame.confirmExit()" class="btn-text">Exit Room</button>
+            </div>
+            <p id="party-continue-status" style="color:#888; font-size:0.8rem; margin-top:-10px; min-height:1.2em;"></p>
         </section>
     </main>
 

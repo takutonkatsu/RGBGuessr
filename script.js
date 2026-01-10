@@ -61,7 +61,9 @@ const app = {
     backToMenu: function() {
         if(friendGame.roomId) {
             friendGame.confirmExit();
-        } else {
+        } else if (partyGame.roomId) { // ★追加
+            partyGame.confirmExit();
+        }else {
             this.showScreen('menu');
         }
     },
@@ -71,6 +73,12 @@ const app = {
             this.showScreen('friend-menu');
             const savedName = localStorage.getItem("friend_name");
             if(savedName) document.getElementById('friend-name-input').value = savedName;
+            return;
+        }
+        if(mode === 'party') { // ★追加
+            this.showScreen('party-menu');
+            const savedName = localStorage.getItem("friend_name"); // 名前保存は共有
+            if(savedName) document.getElementById('party-name-input').value = savedName;
             return;
         }
         this.showScreen(mode);
@@ -752,4 +760,297 @@ const friendGame = {
 window.onload = function() {
     // 最初にメニュー画面を表示（ここでmenuLogic.initが呼ばれ、記録が反映されます）
     app.showScreen('menu');
+};
+
+
+
+
+// ▼ 6. PARTY BATTLE MODE (3 Players)
+const partyGame = {
+    roomId: null, role: null, roomRef: null,
+    myName: "Player", 
+    currentRound: 0, 
+
+    createRoom: function() {
+        const name = document.getElementById('party-name-input').value.trim();
+        if(!name) return app.alert("Please enter your name.");
+        localStorage.setItem("friend_name", name);
+        this.myName = name; this.role = 'host';
+        this.currentRound = 0;
+        this.roomId = Math.floor(1000 + Math.random() * 9000).toString();
+        this.roomRef = db.ref('rooms/' + this.roomId);
+        
+        // 3人分のスロットを用意
+        this.roomRef.set({
+            state: 'waiting', question: utils.randColor(), round: 1,
+            host: { name: this.myName, status: 'waiting', score: 0 },
+            guest: { name: '', status: 'waiting', score: 0 },
+            guest2: { name: '', status: 'waiting', score: 0 }, // 3人目
+            wins: { host: 0, guest: 0, guest2: 0 }
+        });
+        this.roomRef.onDisconnect().remove();
+        this.listenToRoom();
+        document.getElementById('party-room-id-display').innerText = this.roomId;
+        app.showScreen('party-lobby');
+    },
+
+    showJoinScreen: function() {
+        const name = document.getElementById('party-name-input').value.trim();
+        if(!name) return app.alert("Please enter your name.");
+        localStorage.setItem("friend_name", name); this.myName = name;
+        app.showScreen('party-join');
+    },
+
+    joinRoom: function() {
+        const inputId = document.getElementById('party-room-input').value;
+        if(inputId.length !== 4) return app.alert("Enter 4-digit ID");
+        this.roomId = inputId;
+        this.roomRef = db.ref('rooms/' + this.roomId);
+        this.currentRound = 0;
+
+        this.roomRef.once('value').then(snapshot => {
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                
+                // 空いている枠を探す
+                if (!data.guest || !data.guest.name) {
+                    this.role = 'guest';
+                } else if (!data.guest2 || !data.guest2.name) {
+                    this.role = 'guest2';
+                } else {
+                    return app.alert("Room is full (3/3)");
+                }
+
+                this.roomRef.child(this.role).update({ name: this.myName, status: 'waiting' });
+                this.roomRef.child(this.role).onDisconnect().remove();
+                
+                // 3人揃ったらplayingへ（hostのみが判定してもいいが、単純化のためここで人数チェック）
+                // ※厳密にはListen内でHostがstate変更するのが安全だが、簡易実装
+                if(data.host && data.guest && this.role === 'guest2') {
+                    this.roomRef.update({ state: 'playing' });
+                }
+                
+                this.listenToRoom();
+            } else { app.alert("Room not found"); }
+        });
+    },
+
+    listenToRoom: function() {
+        this.roomRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if(!data) { app.alert("Connection lost / Room closed", () => { this.exitRoom(true); }); return; }
+
+            // ロビーでの名前表示更新
+            if(data.host) document.getElementById('party-p1-name').innerText = "Host: " + data.host.name;
+            if(data.guest && data.guest.name) document.getElementById('party-p2-name').innerText = "Guest 1: " + data.guest.name;
+            else document.getElementById('party-p2-name').innerText = "Guest 1: (Waiting...)";
+            if(data.guest2 && data.guest2.name) document.getElementById('party-p3-name').innerText = "Guest 2: " + data.guest2.name;
+            else document.getElementById('party-p3-name').innerText = "Guest 2: (Waiting...)";
+
+            // 人数カウント
+            let count = 0;
+            if(data.host) count++;
+            if(data.guest && data.guest.name) count++;
+            if(data.guest2 && data.guest2.name) count++;
+            document.getElementById('party-status-text').innerText = `Waiting for players (${count}/3)...`;
+
+            // Host側: 3人揃ったら playing にする（遅れて入った人のために再確認）
+            if (this.role === 'host' && data.state === 'waiting' && count === 3) {
+                 this.roomRef.update({ state: 'playing' });
+            }
+
+            // ゲーム進行管理
+            if (data.state === 'finished') {
+                this.showResult(data);
+                return;
+            }
+
+            if (data.state === 'playing') {
+                if(!document.getElementById('screen-party-battle').classList.contains('active')) {
+                    this.startRound(data);
+                } else if (this.currentRound !== data.round) {
+                    this.startRound(data);
+                }
+
+                // 相手のステータス表示
+                let waitingCount = 0;
+                if (data.host.status !== 'guessed') waitingCount++;
+                if (data.guest.status !== 'guessed') waitingCount++;
+                if (data.guest2.status !== 'guessed') waitingCount++;
+                
+                const statusEl = document.getElementById('party-opponent-status');
+                if (waitingCount === 0) {
+                    statusEl.innerText = "All players answered!";
+                    statusEl.style.background = "rgba(255, 71, 87, 0.2)"; statusEl.style.color = "#ff4757";
+                } else {
+                    statusEl.innerText = `${waitingCount} player(s) thinking...`;
+                    statusEl.style.background = "rgba(0, 210, 211, 0.1)"; statusEl.style.color = "var(--primary-party)";
+                }
+
+                // Hostが全員の回答を確認したら集計
+                if (this.role === 'host') {
+                    if (data.host.status === 'guessed' && data.guest.status === 'guessed' && data.guest2.status === 'guessed') {
+                        this.calcResult(data);
+                    }
+                }
+            }
+        });
+    },
+
+    startRound: function(data) {
+        if (this.currentRound === data.round && document.getElementById('screen-party-battle').classList.contains('active')) return;
+        
+        app.showScreen('party-battle');
+        document.getElementById('party-wait-msg').classList.add('hidden');
+        document.getElementById('party-guess-btn').classList.remove('hidden');
+
+        const update = () => this.updateColor();
+        document.getElementById('party-R').oninput = update;
+        document.getElementById('party-G').oninput = update;
+        document.getElementById('party-B').oninput = update;
+
+        this.currentRound = data.round;
+        const q = data.question;
+        document.getElementById('party-R').value = 128; 
+        document.getElementById('party-G').value = 128; 
+        document.getElementById('party-B').value = 128;
+        this.updateColor();
+        document.getElementById('party-round-display').innerText = "Round " + data.round;
+        document.getElementById('party-question-color').style.backgroundColor = q.hex; 
+    },
+
+    updateColor: function() {
+        const r = document.getElementById('party-R').value; 
+        const g = document.getElementById('party-G').value; 
+        const b = document.getElementById('party-B').value;
+        document.getElementById('party-val-R').innerText = r; 
+        document.getElementById('party-val-G').innerText = g; 
+        document.getElementById('party-val-B').innerText = b;
+    },
+
+    submitGuess: function() {
+        const r = parseInt(document.getElementById('party-R').value); 
+        const g = parseInt(document.getElementById('party-G').value); 
+        const b = parseInt(document.getElementById('party-B').value);
+        this.roomRef.child(this.role).update({ color: {r, g, b, hex: utils.rgbToHex(r,g,b)}, status: 'guessed' });
+        document.getElementById('party-guess-btn').classList.add('hidden');
+        document.getElementById('party-wait-msg').classList.remove('hidden');
+    },
+
+    calcResult: function(data) {
+        const q = data.question;
+        const calcScore = (ans) => {
+            const idx = 2; const sq = (q.r-ans.r)**idx + (q.g-ans.g)**idx + (q.b-ans.b)**idx;
+            const base = Math.max((255-q.r)**idx, q.r**idx) + Math.max((255-q.g)**idx, q.g**idx) + Math.max((255-q.b)**idx, q.b**idx);
+            return Math.ceil(5000 - 5000 * sq / base);
+        };
+        const s1 = calcScore(data.host.color); 
+        const s2 = calcScore(data.guest.color);
+        const s3 = calcScore(data.guest2.color);
+        
+        // 勝利数カウント（1位のみ加算）
+        let newWins = data.wins || { host: 0, guest: 0, guest2: 0 };
+        const maxScore = Math.max(s1, s2, s3);
+        if(s1 === maxScore) newWins.host++;
+        else if(s2 === maxScore) newWins.guest++;
+        else if(s3 === maxScore) newWins.guest2++;
+        
+        this.roomRef.update({ 
+            'host/score': s1, 'guest/score': s2, 'guest2/score': s3, 
+            wins: newWins, state: 'finished' 
+        });
+    },
+
+    showResult: function(data) {
+        if(!document.getElementById('screen-party-result').classList.contains('active')) {
+            app.showScreen('party-result');
+        }
+
+        // データの整理とソート
+        const players = [
+            { key: 'host', name: data.host.name, score: data.host.score, color: data.host.color, me: (this.role === 'host') },
+            { key: 'guest', name: data.guest.name, score: data.guest.score, color: data.guest.color, me: (this.role === 'guest') },
+            { key: 'guest2', name: data.guest2.name, score: data.guest2.score, color: data.guest2.color, me: (this.role === 'guest2') }
+        ];
+
+        // スコア順にソート
+        players.sort((a, b) => b.score - a.score);
+
+        // 順位表示
+        // 1位
+        document.getElementById('party-name-1').innerText = players[0].name;
+        document.getElementById('party-score-1').innerText = players[0].score;
+        document.getElementById('party-you-1').innerText = players[0].me ? "(YOU)" : "";
+        // 2位
+        document.getElementById('party-name-2').innerText = players[1].name;
+        document.getElementById('party-score-2').innerText = players[1].score;
+        // 3位
+        document.getElementById('party-name-3').innerText = players[2].name;
+        document.getElementById('party-score-3').innerText = players[2].score;
+
+        // タイトル判定
+        const myRank = players.findIndex(p => p.me);
+        const title = document.getElementById('party-result-title');
+        if (myRank === 0) { title.innerText = "WINNER!"; title.style.color = "var(--accent-gold)"; }
+        else { title.innerText = (myRank+1) + "rd PLACE"; title.style.color = "#fff"; }
+
+        // 色比較エリアの更新
+        const q = data.question;
+        document.getElementById('party-ans-color').style.backgroundColor = q.hex; 
+        document.getElementById('party-ans-text').innerText = `${q.r},${q.g},${q.b}`;
+
+        // 各プレイヤーの色表示（元の定義順で表示する）
+        const setP = (key, pData) => {
+             const c = pData.color;
+             document.getElementById(`party-${key}-color`).style.backgroundColor = c.hex;
+             document.getElementById(`party-${key}-text`).innerText = `${c.r},${c.g},${c.b}`;
+             document.getElementById(`party-label-${key}`).innerText = pData.name.substring(0,3).toUpperCase();
+        };
+        setP('p1', {name: data.host.name, color: data.host.color});
+        setP('p2', {name: data.guest.name, color: data.guest.color});
+        setP('p3', {name: data.guest2.name, color: data.guest2.color});
+
+        // Continueボタン管理
+        const myP = players.find(p => p.me);
+        const myData = data[this.role];
+        
+        const btn = document.getElementById('party-continue-btn');
+        if (myData.status === 'ready') {
+            btn.disabled = true; btn.innerText = "WAITING..."; btn.style.background = "#555"; btn.style.opacity = "0.7";
+        } else {
+            btn.disabled = false; btn.innerText = "CONTINUE"; btn.style.background = "var(--text-main)"; btn.style.opacity = "1";
+        }
+
+        // メッセージ更新
+        let readyCount = 0;
+        if(data.host.status === 'ready') readyCount++;
+        if(data.guest.status === 'ready') readyCount++;
+        if(data.guest2.status === 'ready') readyCount++;
+        
+        const contMsg = document.getElementById('party-continue-status');
+        if(readyCount === 3) contMsg.innerText = "Starting next round...";
+        else if(readyCount > 0) contMsg.innerText = `Waiting for players (${readyCount}/3 ready)...`;
+        else contMsg.innerText = "";
+
+        // 全員Readyで次へ
+        if (readyCount === 3 && this.role === 'host') {
+            this.nextRound(data.round + 1);
+        }
+    },
+
+    voteContinue: function() {
+        const btn = document.getElementById('party-continue-btn');
+        btn.disabled = true; btn.innerText = "WAITING..."; btn.style.background = "#555"; btn.style.opacity = "0.7";
+        this.roomRef.child(this.role).update({ status: 'ready' });
+    },
+
+    nextRound: function(nextRoundNum) {
+        this.roomRef.update({ 
+            question: utils.randColor(), round: nextRoundNum, state: 'playing', 
+            'host/status': 'thinking', 'guest/status': 'thinking', 'guest2/status': 'thinking' 
+        });
+    },
+
+    confirmExit: function() { app.confirm("Exit Party Battle?", (y) => { if(y) this.exitRoom(); }); },
+    exitRoom: function(isPassive) { if(this.roomRef && !isPassive) { this.roomRef.off(); this.roomRef.remove(); } this.roomId = null; app.showScreen('menu'); }
 };
