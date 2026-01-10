@@ -149,13 +149,16 @@ const menuLogic = {
     }
 };
 
-// ▼ Game Modes (Matching, Original, Challenge, AnotherWorld) - Same as before
+// ▼ Game Modes (Matching, Original, Challenge, AnotherWorld)
+
 const matchingGame = {
     timerInterval: null, currentTime: 0, questionColor: {},
     init: function() {
         this.els = { R: document.getElementById('matching-R'), G: document.getElementById('matching-G'), B: document.getElementById('matching-B'), valR: document.getElementById('matching-val-R'), valG: document.getElementById('matching-val-G'), valB: document.getElementById('matching-val-B'), qColor: document.getElementById('matching-question-color'), myColor: document.getElementById('matching-input-color'), timer: document.getElementById('matching-timer') };
         const update = () => this.updateMyColor(); this.els.R.oninput = update; this.els.G.oninput = update; this.els.B.oninput = update;
         document.getElementById('matching-guess-btn').onclick = () => this.guess();
+        // ★修正: 初期化時にNEW RECORDを隠す
+        document.getElementById('matching-new-record').classList.add('hidden');
         this.updateHistory(); this.resetGame();
     },
     resetGame: function() {
@@ -170,6 +173,8 @@ const matchingGame = {
         }
         this.els.qColor.style.backgroundColor = this.questionColor.hex;
         this.els.R.value = 128; this.els.G.value = 128; this.els.B.value = 128; this.updateMyColor();
+        // ★修正: リセット時もNEW RECORDを隠す
+        document.getElementById('matching-new-record').classList.add('hidden');
         if(this.timerInterval) clearInterval(this.timerInterval);
         this.timerInterval = setInterval(() => { this.currentTime += 0.01; this.els.timer.innerText = this.currentTime.toFixed(2); }, 10);
     },
@@ -192,13 +197,30 @@ const matchingGame = {
         localStorage.setItem("2score"+val, score); localStorage.setItem("2result_time"+val, this.currentTime.toFixed(2));
         localStorage.setItem("2answer_rgb16"+val, q.hex); localStorage.setItem("2input_rgb16"+val, utils.rgbToHex(input.r, input.g, input.b));
         localStorage.setItem("2answer_rgb"+val, `(${q.r},${q.g},${q.b})`); localStorage.setItem("2input_rgb"+val, `(${input.r},${input.g},${input.b})`);
+        
+        // ★修正: 単発記録更新またはAo5更新のどちらかがあればNEW RECORDを表示
+        let isNewRecord = false;
         const pb = Number(localStorage.getItem("2my_1record")) || 0;
-        if(score > pb) { localStorage.setItem("2my_1record", score); document.getElementById('matching-new-record').classList.remove('hidden'); } else { document.getElementById('matching-new-record').classList.add('hidden'); }
+        if(score > pb) { 
+            localStorage.setItem("2my_1record", score); 
+            isNewRecord = true;
+        }
+
         if(val >= 5) {
             let scores = []; for(let i=0; i<5; i++) scores.push(Number(localStorage.getItem("2score"+(val-i))));
             const max = Math.max(...scores); const min = Math.min(...scores); const sum = scores.reduce((a,b)=>a+b, 0); const ao5 = Math.ceil((sum - max - min)/3);
-            localStorage.setItem("2Ao5"+val, ao5); const ao5pb = Number(localStorage.getItem("2my_ao5record")) || 0; if(ao5 > ao5pb) localStorage.setItem("2my_ao5record", ao5);
+            localStorage.setItem("2Ao5"+val, ao5); 
+            const ao5pb = Number(localStorage.getItem("2my_ao5record")) || 0; 
+            if(ao5 > ao5pb) {
+                localStorage.setItem("2my_ao5record", ao5);
+                isNewRecord = true; // Ao5更新でもフラグを立てる
+            }
         }
+        
+        // フラグに基づいて表示・非表示を切り替え
+        const recordEl = document.getElementById('matching-new-record');
+        if(isNewRecord) recordEl.classList.remove('hidden'); else recordEl.classList.add('hidden');
+
         localStorage.setItem("2index", val + 1); this.updateHistory();
     },
     showResult: function(score, cScore, tScore, q, input) {
@@ -233,6 +255,8 @@ const originalGame = {
         const update = () => { this.els.valR.innerText = this.els.R.value; this.els.valG.innerText = this.els.G.value; this.els.valB.innerText = this.els.B.value; };
         this.els.R.oninput = update; this.els.G.oninput = update; this.els.B.oninput = update;
         document.getElementById('original-guess-btn').onclick = () => this.guess();
+        // ★修正: 初期化時にNEW RECORDを隠す
+        document.getElementById('original-new-record').classList.add('hidden');
         this.retry(); this.updateHistory();
     },
     retry: function() {
@@ -240,6 +264,8 @@ const originalGame = {
         if(savedHex) { const r = Number(localStorage.getItem("RGB_Temporary_R")); const g = Number(localStorage.getItem("RGB_Temporary_G")); const b = Number(localStorage.getItem("RGB_Temporary_B")); this.questionColor = { r, g, b, hex: savedHex }; }
         else { this.questionColor = utils.randColor(); localStorage.setItem("RGB_Temporary_Hex", this.questionColor.hex); localStorage.setItem("RGB_Temporary_R", this.questionColor.r); localStorage.setItem("RGB_Temporary_G", this.questionColor.g); localStorage.setItem("RGB_Temporary_B", this.questionColor.b); }
         this.els.qColor.style.backgroundColor = this.questionColor.hex; this.els.R.value = 128; this.els.G.value = 128; this.els.B.value = 128; this.els.R.oninput();
+        // ★修正: リトライ時もNEW RECORDを隠す
+        document.getElementById('original-new-record').classList.add('hidden');
     },
     nextColor: function() { localStorage.removeItem("RGB_Temporary_Hex"); this.retry(); app.showScreen('original'); },
     guess: function() {
@@ -249,12 +275,30 @@ const originalGame = {
         let val = Number(localStorage.getItem("index")) || 1;
         localStorage.setItem("score"+val, score); localStorage.setItem("answer_rgb16"+val, q.hex); localStorage.setItem("input_rgb16"+val, utils.rgbToHex(r,g,b));
         localStorage.setItem("answer_rgb"+val, `(${q.r},${q.g},${q.b})`); localStorage.setItem("input_rgb"+val, `(${r},${g},${b})`);
-        const pb = Number(localStorage.getItem("my_1record")) || 0; if(score > pb) { localStorage.setItem("my_1record", score); document.getElementById('original-new-record').classList.remove('hidden'); } else { document.getElementById('original-new-record').classList.add('hidden'); }
+        
+        // ★修正: 単発記録またはAo5更新でNEW RECORDを表示
+        let isNewRecord = false;
+        const pb = Number(localStorage.getItem("my_1record")) || 0; 
+        if(score > pb) { 
+            localStorage.setItem("my_1record", score); 
+            isNewRecord = true;
+        } 
+
         if(val >= 5) {
             let scores = []; for(let i=0; i<5; i++) scores.push(Number(localStorage.getItem("score"+(val-i))));
             const max = Math.max(...scores); const min = Math.min(...scores); const sum = scores.reduce((a,b)=>a+b,0); const ao5 = Math.ceil((sum - max - min)/3);
-            localStorage.setItem("Ao5"+val, ao5); const ao5pb = Number(localStorage.getItem("my_ao5record")) || 0; if(ao5 > ao5pb) localStorage.setItem("my_ao5record", ao5);
+            localStorage.setItem("Ao5"+val, ao5); 
+            const ao5pb = Number(localStorage.getItem("my_ao5record")) || 0; 
+            if(ao5 > ao5pb) {
+                localStorage.setItem("my_ao5record", ao5);
+                isNewRecord = true;
+            }
         }
+        
+        // フラグに基づいて表示制御
+        const recordEl = document.getElementById('original-new-record');
+        if(isNewRecord) recordEl.classList.remove('hidden'); else recordEl.classList.add('hidden');
+
         localStorage.setItem("index", val + 1); localStorage.removeItem("RGB_Temporary_Hex");
         this.showResult(score, q, {r,g,b}); this.updateHistory();
     },
@@ -282,6 +326,7 @@ const originalGame = {
     resetData: function() { app.confirm("記録を削除しますか？", (y)=>{ if(y){ localStorage.clear(); location.reload(); } }) }
 };
 
+// ▼ Challenge Mode (修正版: NEW RECORD判定ロジック調整)
 const challengeGame = {
     aimScores: [1000,2000,3000,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,4910,4920,4930,4940,4950,4960,4970,4980,4990,4995,4998,5000],
     currentStage: 1, questionColor: {},
@@ -291,6 +336,8 @@ const challengeGame = {
         this.els.R.oninput = update; this.els.G.oninput = update; this.els.B.oninput = update;
         document.getElementById('challenge-guess-btn').onclick = () => this.guess();
         const savedStage = localStorage.getItem("4stage_number"); this.currentStage = savedStage ? Number(savedStage) : 1;
+        // 初期化時にNEW RECORDを隠す
+        document.getElementById('challenge-new-record').classList.add('hidden');
         this.setupStage(); this.updateHistory();
     },
     setupStage: function() {
@@ -299,12 +346,14 @@ const challengeGame = {
         if(savedHex) { const r = Number(localStorage.getItem("4RGB_Temporary_R")); const g = Number(localStorage.getItem("4RGB_Temporary_G")); const b = Number(localStorage.getItem("4RGB_Temporary_B")); this.questionColor = { r,g,b, hex: savedHex }; }
         else { this.questionColor = utils.randColor(); localStorage.setItem("4RGB_Temporary_Hex", this.questionColor.hex); localStorage.setItem("4RGB_Temporary_R", this.questionColor.r); localStorage.setItem("4RGB_Temporary_G", this.questionColor.g); localStorage.setItem("4RGB_Temporary_B", this.questionColor.b); }
         this.els.sample.style.backgroundColor = this.questionColor.hex; this.els.R.value = 128; this.els.G.value = 128; this.els.B.value = 128; this.els.R.oninput();
+        document.getElementById('challenge-new-record').classList.add('hidden');
     },
     guess: function() {
         const r = parseInt(this.els.R.value); const g = parseInt(this.els.G.value); const b = parseInt(this.els.B.value); const q = this.questionColor;
         const square = (q.r-r)**2 + (q.g-g)**2 + (q.b-b)**2; const base = Math.max((255-q.r)**2, q.r**2) + Math.max((255-q.g)**2, q.g**2) + Math.max((255-q.b)**2, q.b**2);
         const score = Math.ceil(5000 - 5000 * square / base);
         const target = this.aimScores[this.currentStage - 1]; const isClear = score >= target;
+        
         app.showScreen('result-challenge');
         const scoreText = document.getElementById('challenge-score-text'); scoreText.innerText = isClear ? "Clear!" : "FAILED"; scoreText.style.color = isClear ? "var(--accent-green)" : "var(--accent-red)";
         document.getElementById('challenge-result-score').innerText = score; document.getElementById('challenge-result-goal').innerText = target;
@@ -312,10 +361,30 @@ const challengeGame = {
         document.getElementById('challenge-your-color').style.backgroundColor = utils.rgbToHex(r,g,b); document.getElementById('challenge-your-text').innerText = `${r},${g},${b}`;
         localStorage.setItem("4answer_rgb16_"+this.currentStage, q.hex); localStorage.setItem("4input_rgb16_"+this.currentStage, utils.rgbToHex(r,g,b));
         localStorage.setItem("4answer_rgb_"+this.currentStage, `(${q.r},${q.g},${q.b})`); localStorage.setItem("4input_rgb_"+this.currentStage, `(${r},${g},${b})`);
+        
+        // ★修正: 「今回のステージ」が「これまでの最高記録」を超えた場合のみ NEW RECORD 表示
+        // ステージ10クリア時: currentStage(10) > maxStage(9) → NEW RECORD
+        const maxStage = Number(localStorage.getItem("4stage_record")) || 0;
+        const recordEl = document.getElementById('challenge-new-record');
+        
+        if(isClear && this.currentStage > maxStage) {
+            recordEl.classList.remove('hidden');
+        } else {
+            recordEl.classList.add('hidden');
+        }
+
         if(isClear) {
             this.els.nextBtn.innerText = "NEXT STAGE"; this.els.nextBtn.onclick = () => this.next();
-            localStorage.setItem("4stage_number" + this.currentStage, score); this.currentStage++; localStorage.setItem("4stage_number", this.currentStage);
-            const maxStage = Number(localStorage.getItem("4stage_record")) || 0; if(this.currentStage > maxStage) localStorage.setItem("4stage_record", this.currentStage);
+            localStorage.setItem("4stage_number" + this.currentStage, score);
+            
+            // ★修正: 先にレコード更新（ステージ番号をそのまま保存することでズレを解消）
+            if(this.currentStage > maxStage) {
+                localStorage.setItem("4stage_record", this.currentStage);
+            }
+
+            // 次のステージへ進める
+            this.currentStage++; 
+            localStorage.setItem("4stage_number", this.currentStage);
             localStorage.removeItem("4RGB_Temporary_Hex");
         } else {
             this.els.nextBtn.innerText = "RESTART"; this.els.nextBtn.onclick = () => this.quickRestart();
@@ -342,6 +411,58 @@ const challengeGame = {
         document.getElementById('challenge-history').innerHTML = html;
     },
     resetData: function() { app.confirm("リセットしますか？", (y)=>{ if(y) this.quickRestart(); }) }
+};
+
+// ★修正・追加: 欠落していた Another World (Color Storage) モードを実装
+const anotherGame = {
+    init: function() {
+        this.els = { R: document.getElementById('another-R'), G: document.getElementById('another-G'), B: document.getElementById('another-B'), valR: document.getElementById('another-val-R'), valG: document.getElementById('another-val-G'), valB: document.getElementById('another-val-B'), myColor: document.getElementById('another-input-color') };
+        const update = () => this.updateMyColor(); 
+        this.els.R.oninput = update; this.els.G.oninput = update; this.els.B.oninput = update;
+        this.els.R.value = 128; this.els.G.value = 128; this.els.B.value = 128; 
+        this.updateMyColor(); this.updateHistory();
+    },
+    updateMyColor: function() {
+        const r = parseInt(this.els.R.value); const g = parseInt(this.els.G.value); const b = parseInt(this.els.B.value);
+        this.els.valR.innerText = r; this.els.valG.innerText = g; this.els.valB.innerText = b;
+        this.els.myColor.style.backgroundColor = utils.rgbToHex(r, g, b);
+    },
+    saveColor: function() {
+        const r = parseInt(this.els.R.value); const g = parseInt(this.els.G.value); const b = parseInt(this.els.B.value);
+        const hex = utils.rgbToHex(r, g, b);
+        let val = Number(localStorage.getItem("3index")) || 1;
+        localStorage.setItem("3input_rgb16"+val, hex);
+        localStorage.setItem("3input_rgb"+val, `(${r},${g},${b})`);
+        localStorage.setItem("3date"+val, new Date().toLocaleString());
+        localStorage.setItem("3index", val + 1);
+        this.updateHistory();
+    },
+    updateHistory: function() {
+        const list = document.getElementById('another-history'); 
+        const val = Number(localStorage.getItem("3index")) || 1;
+        let html = "";
+        for(let i = val - 1; i > 0; i--) {
+            const hex = localStorage.getItem("3input_rgb16"+i) || '#000'; 
+            const txt = localStorage.getItem("3input_rgb"+i) || '';
+            const date = localStorage.getItem("3date"+i) || '';
+            html += `<div class="history-item" style="grid-template-columns: 40px 1fr;"><span class="history-index">#${i}</span><div class="history-colors"><div class="color-row"><span class="chip-xs" style="background:${hex}; width:20px; height:20px;"></span><span style="font-size:1rem; font-weight:bold; color:#fff;">${txt}</span></div><div style="font-size:0.7rem; color:#666; margin-top:2px;">${date}</div></div></div>`;
+        }
+        list.innerHTML = html;
+    },
+    resetData: function() { 
+        app.confirm("保存した色をすべて消去しますか？", (y)=>{ 
+            if(y){ 
+                const val = Number(localStorage.getItem("3index")) || 1;
+                for(let i=1; i<val; i++) {
+                    localStorage.removeItem("3input_rgb16"+i);
+                    localStorage.removeItem("3input_rgb"+i);
+                    localStorage.removeItem("3date"+i);
+                }
+                localStorage.removeItem("3index");
+                this.updateHistory();
+            } 
+        });
+    }
 };
 
 
@@ -625,4 +746,10 @@ const friendGame = {
 
     confirmExit: function() { app.confirm("Exit Friend Battle?", (y) => { if(y) this.exitRoom(); }); },
     exitRoom: function(isPassive) { if(this.roomRef && !isPassive) { this.roomRef.off(); this.roomRef.remove(); } this.roomId = null; app.showScreen('menu'); }
+};
+
+// ▼ Initialize App (ページ読み込み時の処理)
+window.onload = function() {
+    // 最初にメニュー画面を表示（ここでmenuLogic.initが呼ばれ、記録が反映されます）
+    app.showScreen('menu');
 };
