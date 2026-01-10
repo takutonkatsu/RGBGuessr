@@ -474,7 +474,7 @@ const anotherGame = {
 };
 
 
-// ▼ 5. FRIEND BATTLE MODE (2 Players) - Path Fixed
+// ▼ 5. FRIEND BATTLE MODE (2 Players) - Win Limit Added
 const friendGame = {
     roomId: null, role: null, roomRef: null,
     myName: "Player", opponentName: "Opponent",
@@ -483,14 +483,19 @@ const friendGame = {
     createRoom: function() {
         const name = document.getElementById('friend-name-input').value.trim();
         if(!name) return app.alert("Please enter your name.");
+        
+        // 勝利条件の取得
+        let maxWins = parseInt(document.getElementById('friend-goal-input').value);
+        if (isNaN(maxWins) || maxWins < 0) maxWins = 5;
+
         localStorage.setItem("friend_name", name);
         this.myName = name; this.role = 'host';
         this.currentRound = 0;
         this.roomId = Math.floor(1000 + Math.random() * 9000).toString();
-        // ★修正: パスを rooms_friend に変更して混線を防止
         this.roomRef = db.ref('rooms_friend/' + this.roomId);
         this.roomRef.set({
             state: 'waiting', question: utils.randColor(), round: 1,
+            maxWins: maxWins, // 勝利条件保存
             host: { name: this.myName, status: 'waiting', score: 0 },
             guest: { name: '', status: 'waiting', score: 0 },
             wins: { host: 0, guest: 0 }
@@ -512,17 +517,43 @@ const friendGame = {
     joinRoom: function() {
         const inputId = document.getElementById('friend-room-input').value;
         if(inputId.length !== 4) return app.alert("Enter 4-digit ID");
+        
+        // 連打防止の即時遷移ロジック（Partyと同じ挙動に統一）
+        const joinBtn = document.querySelector('#screen-friend-join .main-action-btn');
+        joinBtn.disabled = true;
+
         this.roomId = inputId; this.role = 'guest'; 
-        // ★修正: パスを rooms_friend に変更
         this.roomRef = db.ref('rooms_friend/' + this.roomId);
         this.currentRound = 0;
+
+        // 即座にロビーへ遷移
+        app.showScreen('friend-lobby');
+        document.getElementById('friend-room-id-display').innerText = this.roomId;
+        document.getElementById('friend-status-text').innerText = "Connecting...";
+        document.getElementById('friend-lobby-goal').innerText = "GOAL: ---";
+
         this.roomRef.once('value').then(snapshot => {
             if(snapshot.exists()) {
+                const data = snapshot.val();
+                if(data.guest && data.guest.name) {
+                    app.alert("Room is full", () => { app.showScreen('friend-join'); });
+                    joinBtn.disabled = false;
+                    return;
+                }
+
                 this.roomRef.child('guest').update({ name: this.myName, status: 'waiting' });
                 this.roomRef.update({ state: 'playing' });
                 this.roomRef.child('guest').onDisconnect().remove();
+                
                 this.listenToRoom();
-            } else { app.alert("Room not found"); }
+                joinBtn.disabled = false;
+            } else { 
+                app.alert("Room not found", () => { app.showScreen('friend-join'); });
+                joinBtn.disabled = false;
+            }
+        }).catch(() => {
+            app.alert("Connection Error", () => { app.showScreen('friend-join'); });
+            joinBtn.disabled = false;
         });
     },
 
@@ -534,6 +565,11 @@ const friendGame = {
             const opRole = this.role === 'host' ? 'guest' : 'host';
             if(data[opRole] && data[opRole].name) this.opponentName = data[opRole].name;
             if(this.role === 'host' && !data.guest) { app.alert("Opponent has left", () => { this.exitRoom(); }); return; }
+
+            // ロビーのゴール表示更新
+            const goalText = (data.maxWins && data.maxWins > 0) ? `First to ${data.maxWins} Wins` : "Endless Mode (∞)";
+            document.getElementById('friend-lobby-goal').innerText = `GOAL: ${goalText}`;
+            document.getElementById('friend-lobby-goal').style.color = (data.maxWins > 0) ? "#fff" : "var(--accent-yellow)";
 
             if (data.state === 'finished') { this.showResult(data); return; }
 
@@ -647,33 +683,66 @@ const friendGame = {
         document.getElementById('friend-label-op').innerHTML = this.opponentName + ' <span style="font-size:0.6em;color:var(--accent-red)">(OPP)</span>';
 
         const title = document.getElementById('friend-result-title');
+        const winDeclare = document.getElementById('friend-final-winner');
+
         if(myData.score > opData.score) { title.innerText = "WIN!"; title.style.color = "var(--accent-red)"; }
         else if (myData.score < opData.score) { title.innerText = "LOSE..."; title.style.color = "var(--accent-blue)"; }
         else { title.innerText = "DRAW"; title.style.color = "#fff"; }
         
+        // 勝利数表示
         const myWin = data.wins[this.role]; 
         const opWin = data.wins[opRole];
         document.getElementById('f-stat-name-1').innerText = this.myName;
         document.getElementById('f-stat-score-val').innerText = `${myWin} - ${opWin}`;
         document.getElementById('f-stat-name-2').innerText = this.opponentName;
+        
+        // ゴール表示
+        const goal = (data.maxWins > 0) ? data.maxWins : 0;
+        document.getElementById('friend-goal-val').innerText = (goal > 0) ? goal : "∞";
 
-        const btn = document.getElementById('friend-continue-btn');
-        if (myData.status === 'ready') {
-            btn.disabled = true; btn.innerText = "WAITING..."; btn.style.background = "#555"; btn.style.opacity = "0.7";
-        } else {
-            btn.disabled = false; btn.innerText = "CONTINUE"; btn.style.background = "var(--text-main)"; btn.style.opacity = "1";
+        // 勝者判定
+        let champion = null;
+        if (goal > 0) {
+            if (data.wins.host >= goal) champion = data.host.name;
+            else if (data.wins.guest >= goal) champion = data.guest.name;
         }
 
-        const opContinue = data[opRole].status === 'ready';
-        const myContinue = data[this.role].status === 'ready';
+        const btn = document.getElementById('friend-continue-btn');
         const contMsg = document.getElementById('friend-continue-status');
-        
-        if(opContinue) { contMsg.innerText = "Opponent wants a rematch!"; contMsg.style.color = "var(--accent-yellow)"; }
-        else if(myContinue) { contMsg.innerText = "Waiting for opponent..."; contMsg.style.color = "#888"; }
-        else { contMsg.innerText = ""; }
 
-        if (myContinue && opContinue && this.role === 'host') {
-            this.nextRound(data.round + 1);
+        if (champion) {
+            // 決着
+            winDeclare.classList.remove('hidden');
+            winDeclare.innerText = `🏆 ${champion} WINS! 🏆`;
+            title.innerText = "GAME SET";
+            title.style.color = "#fff";
+            
+            btn.innerText = "RETURN TO MENU";
+            btn.disabled = false;
+            btn.style.background = "var(--primary-friend)";
+            btn.onclick = () => this.confirmExit();
+            contMsg.innerText = "Thanks for playing!";
+        } else {
+            // 継続
+            winDeclare.classList.add('hidden');
+            btn.onclick = () => this.voteContinue(); // ハンドラ戻す
+
+            if (myData.status === 'ready') {
+                btn.disabled = true; btn.innerText = "WAITING..."; btn.style.background = "#555"; btn.style.opacity = "0.7";
+            } else {
+                btn.disabled = false; btn.innerText = "CONTINUE"; btn.style.background = "var(--text-main)"; btn.style.opacity = "1";
+            }
+
+            const opContinue = data[opRole].status === 'ready';
+            const myContinue = data[this.role].status === 'ready';
+            
+            if(opContinue) { contMsg.innerText = "Opponent wants a rematch!"; contMsg.style.color = "var(--accent-yellow)"; }
+            else if(myContinue) { contMsg.innerText = "Waiting for opponent..."; contMsg.style.color = "#888"; }
+            else { contMsg.innerText = ""; }
+
+            if (myContinue && opContinue && this.role === 'host') {
+                this.nextRound(data.round + 1);
+            }
         }
     },
 

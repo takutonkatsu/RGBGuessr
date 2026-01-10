@@ -189,6 +189,12 @@
                 <p class="input-label">YOUR NAME (Max 6)</p>
                 <input type="text" id="friend-name-input" maxlength="6" placeholder="Player" class="name-input">
             </div>
+
+            <div class="setting-area">
+                <label style="color:#aaa; font-size:0.8rem; display:block; margin-bottom:5px;">GOAL (Wins)</label>
+                <input type="number" id="friend-goal-input" class="name-input" placeholder="5" value="5" min="0" style="width:100px; font-size:1.5rem; border-color:var(--primary-friend);">
+                <p style="color:#666; font-size:0.7rem; margin-top:5px;">Enter "0" for Endless Mode</p>
+            </div>
             <div class="menu-grid">
                 <div class="game-card" style="border-color:var(--primary-friend);" onclick="friendGame.createRoom()">
                     <div class="card-icon">🏠</div><div class="card-content"><h3>CREATE ROOM</h3><p>部屋を作って招待</p></div>
@@ -210,6 +216,10 @@
             <div class="game-header"><h2 class="game-title color-friend">Lobby</h2></div>
             <p>Share this Room ID</p>
             <div id="friend-room-id-display" class="room-id-display">----</div>
+            
+            <div id="friend-lobby-goal" style="color:#fff; font-family:var(--font-mono); margin-bottom:15px; font-weight:bold;">
+                GOAL: ---
+            </div>
             <div class="loading-spinner"></div>
             <p id="friend-status-text" class="status-text">Waiting for friend...</p>
         </section>
@@ -229,6 +239,7 @@
 
         <section id="screen-friend-result" class="screen fade-in result-screen">
             <h2 id="friend-result-title" class="result-title-big">WIN!</h2>
+            <div id="friend-final-winner" class="hidden winner-declare"></div>
 
             <div class="friend-result-main">
                 <div class="f-res-box">
@@ -250,6 +261,10 @@
                 <span class="f-stat-total" id="f-stat-score-val">0 - 0</span>
                 <span id="f-stat-name-2" class="f-stat-name">OPP</span>
             </div>
+            
+            <div style="text-align:center; font-family:var(--font-mono); font-size:0.8rem; margin-top:-15px; margin-bottom:15px; color:#888;">
+                GOAL: <span id="friend-goal-val" style="color:#fff; font-weight:bold;">5</span>
+            </div>
 
             <div class="compare-row" style="flex-wrap:wrap;">
                 <div class="compare-item"><p class="compare-label">TARGET</p><div id="friend-ans-color" class="mini-box"></div><span id="friend-ans-text"></span></div>
@@ -263,6 +278,10 @@
             </div>
             <p id="friend-continue-status" style="color:#888; font-size:0.8rem; margin-top:-10px; min-height:1.2em;"></p>
         </section>
+        
+        
+        
+        
         <section id="screen-party-menu" class="screen fade-in" style="text-align:center;">
             <div class="game-header"><h2 class="game-title color-party">Party Battle</h2></div>
             <div class="friend-name-area">
