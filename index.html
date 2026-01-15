@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RGBGuessr</title>
+    <title>Retina</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,19 +11,16 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-    <link rel="shortcut icon" href="favicon.ico">
-    <link rel="apple-touch-icon" href="apple-touch-icon-180x180.png" sizes="180x180">    
-    <link rel="icon" type="image/png" href="android-chrome-192x192.png" sizes="192x192">
-
+    <link rel="shortcut icon" href="Retina_icon.png">
+    <link rel="apple-touch-icon" href="Retina_icon.png">    
+    <link rel="icon" type="image/png" href="Retina_icon.png">
     
     <meta property="og:url" content="https://takuto1014.github.io/RGBGuessr/">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="RGBGuessr">
-    <meta property="og:description" content="世界中で空前絶後の大ブーム！今すぐRGBGuessrをプレイしよう！">
-    <meta property="og:site_name" content="RGBGuessr">
+    <meta property="og:title" content="Retina">
+    <meta property="og:description" content="Test your color sense.">
+    <meta property="og:site_name" content="Retina">
     <meta property="og:image" content="https://takuto1014.github.io/RGBGuessr/RgbGuessr共有.png">
-
-
 </head>
 <body>
 
@@ -32,7 +29,8 @@
 
     <header class="app-header">
         <div class="logo" id="app-logo" onclick="app.backToMenu()">
-            <span class="logo-r">R</span><span class="logo-g">G</span><span class="logo-b">B</span><span class="logo-light">Guessr</span>
+            <img src="Retina_icon.png" alt="icon" class="logo-icon">
+            <span class="logo-text">RETINA</span>
         </div>
         <button id="back-btn" class="nav-btn hidden" onclick="app.backToMenu()">
             <span class="icon">✕</span> Close
@@ -47,370 +45,340 @@
                 <h1 class="hero-title">Master the <span class="char-r">R</span><span class="char-g">G</span><span class="char-b">B</span></h1>
             </div>
 
-            <div class="menu-grid">
-                <div class="game-card card-matching" onclick="app.startGame('matching')">
-                    <div class="card-icon">🎯</div>
-                    <div class="card-content">
-                        <h3>Matching</h3>
-                        <p>視覚で捉える直感モード</p>
-                        <div class="record-badge" id="menu-matching-record">NO RECORD</div>
+            <div class="daily-section" onclick="app.startGame('daily')">
+                <div class="daily-main-container">
+                    <div id="menu-daily-color-preview" class="daily-preview-large"></div>
+                    <div class="daily-content">
+                        <div class="daily-label">TODAY'S CHALLENGE</div>
+                        <div class="daily-date" id="menu-daily-date">202X.XX.XX</div>
+                        <h2 class="daily-title">Daily Color</h2>
+                        <p class="daily-desc">世界共通の「今日の色」に挑戦せよ</p>
                     </div>
                 </div>
+                <div class="daily-status" id="menu-daily-status">PLAY NOW ►</div>
+            </div>
 
+            <div class="menu-grid">
                 <div class="game-card card-original" onclick="app.startGame('original')">
                     <div class="card-icon">🧠</div>
                     <div class="card-content">
-                        <h3>Original</h3>
+                        <h3>Origin</h3>
                         <p>数値のみで挑む真剣勝負</p>
                         <div class="record-badge" id="menu-original-record">NO RECORD</div>
+                    </div>
+                </div>
+
+                <div class="game-card card-rush" onclick="app.startGame('rush')">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-content">
+                        <h3>Rush</h3>
+                        <p>時間制限付きのスピード勝負</p>
+                        <div class="record-badge" id="menu-rush-record">NO RECORD</div>
                     </div>
                 </div>
 
                 <div class="game-card card-challenge" onclick="app.startGame('challenge')">
                     <div class="card-icon">🔥</div>
                     <div class="card-content">
-                        <h3>Challenge</h3>
+                        <h3>Survival</h3>
                         <p>極限へ至るサバイバル</p>
                         <div class="record-badge" id="menu-challenge-record">Start: Stage 1</div>
                     </div>
                 </div>
 
-                <div class="game-card card-friend" onclick="app.startGame('friend')">
+                <div class="game-card card-multi" onclick="app.startGame('multi')">
                     <div class="card-icon">⚔️</div>
                     <div class="card-content">
-                        <h3>Friend Battle</h3>
-                        <p>感性を競うリアルタイム戦</p>
-                        <div class="record-badge">ONLINE</div>
-                    </div>
-                </div>
-                <div class="game-card card-party" onclick="app.startGame('party')">
-                    <div class="card-icon">🎉</div>
-                    <div class="card-content">
-                        <h3>Party Battle</h3>
-                        <p>3人で競うカオスな対戦</p>
-                        <div class="record-badge">3 PLAYERS</div>
+                        <h3>Versus</h3>
+                        <p>2〜4人でリアルタイム対戦</p>
+                        <div class="record-badge">2-4 PLAYERS</div>
                     </div>
                 </div>
             </div>
-            </div>
-
+            
             <div id="another-world-entrance" class="hidden text-center" style="margin-top: 40px;">
                 <button class="glitch-btn" onclick="app.triggerSecret()">ENTER THE VOID</button>
             </div>
-            
             <div id="god-badge-area" class="text-center" style="margin-top: 20px; opacity: 0.8;"></div>
-
+            
             <div class="about-section">
                 <div class="about-title">How to Play</div>
                 <div class="about-card">
                     <h4>What is RGB?</h4>
                     <p>光の三原色（Red/Green/Blue）を0〜255の数値で表現するシステム。このゲームは、あなたの網膜と脳内変換の精度を極限まで高めるトレーニングツールです。</p>
                 </div>
-                <div class="about-card about-matching">
-                    <h4>Matching</h4>
-                    <p>見本の色に合わせてスライダーを調整する、直感的なエントリーモード。視覚的に答え合わせができるため、RGBの感覚を養うのに最適です。</p>
-                </div>
                 <div class="about-card about-original">
-                    <h4>Original</h4>
-                    <p>視覚的なヒント無しでRGB数値を導き出す、ストイックなスタンダードモード。純粋な知識と色彩感覚が試される、RGBGuessrの真髄です。</p>
+                    <h4>Origin</h4>
+                    <p>視覚的なヒント無しでRGB数値を導き出す、ストイックなスタンダードモード。純粋な知識と色彩感覚が試される、Retinaの原点です。</p>
+                </div>
+                <div class="about-card about-rush">
+                    <h4>Rush</h4>
+                    <p>60秒間のタイムアタック。高精度（95%以上）で回答すると残り時間が増え、ミス（90%未満）すると時間が減ります。正確さと速さの両立が鍵。</p>
                 </div>
                 <div class="about-card about-challenge">
-                    <h4>Challenge</h4>
+                    <h4>Survival</h4>
                     <p>ステージ進行と共に厳しくなるノルマ。一度のミスも許されないプレッシャーの中で、自身の限界到達点を探る上級者向けサバイバル。</p>
                 </div>
-                <div class="about-card about-friend">
-                    <h4>Friend Battle</h4>
-                    <p>同じ色彩・同じ瞬間に挑む、リアルタイム1vs1。相手より正確に、より鋭く。言葉不要の感性をぶつけ合う、スリリングな対戦モード。</p>
-                </div>
-                <div class="about-card about-friend" style="border-left-color: var(--primary-party);">
-                    <h4>Party Battle</h4>
-                    <p>3人同時のバトルロイヤル。1位のみが勝者となる過酷なルール。自分以外の2人の色も見極めながら、RGBの覇者を目指せ。</p>
-                </div>
-                <div class="about-card">
-                    <h4>Ao5 System</h4>
-                    <p>Ao5 (<span class="ao5-highlight">Average of 5</span>) は、直近5回のうち最高値と最低値を除外した平均スコア。運によるブレを排除した、あなたの「真の実力」を証明する数値です。</p>
+                <div class="about-card about-multi">
+                    <h4>Versus</h4>
+                    <p>2〜4人で遊べるリアルタイムバトル。人数に合わせて部屋を作り、同じ色を同時に解いて精度を競い合います。</p>
                 </div>
             </div>
         </section>
 
-        <section id="screen-matching" class="screen fade-in">
-            <div class="game-header"><h2 class="game-title color-matching">Matching</h2><div id="matching-timer" class="digital-timer">0.00</div></div>
-            <div class="color-display-area"><div class="color-panel"><span class="panel-label">Target</span><div id="matching-question-color" class="color-box question-box"><span class="overlay-text">?</span></div></div><div class="color-panel"><span class="panel-label">Your Color</span><div id="matching-input-color" class="color-box answer-box"></div></div></div>
-            <div class="slider-container glass-panel"><div class="slider-row"><label class="label-r">R</label><input type="range" id="matching-R" class="custom-range range-r" min="0" max="255" value="128"><span id="matching-val-R" class="val-num">128</span></div><div class="slider-row"><label class="label-g">G</label><input type="range" id="matching-G" class="custom-range range-g" min="0" max="255" value="128"><span id="matching-val-G" class="val-num">128</span></div><div class="slider-row"><label class="label-b">B</label><input type="range" id="matching-B" class="custom-range range-b" min="0" max="255" value="128"><span id="matching-val-B" class="val-num">128</span></div></div>
-            <button id="matching-guess-btn" class="main-action-btn">GUESS</button>
+        <section id="screen-daily" class="screen fade-in">
+            <div class="game-header"><h2 class="game-title color-daily">Daily Color</h2><div id="daily-date-display" class="digital-timer" style="font-size:1rem;">202X.XX.XX</div></div>
+            <div class="single-color-display"><div id="daily-question-color" class="color-box large-box"></div></div>
+            <div class="slider-container glass-panel">
+                <div class="slider-row"><label class="label-r">R</label><input type="range" id="daily-R" class="custom-range range-r" min="0" max="255" value="128"><span id="daily-val-R" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-g">G</label><input type="range" id="daily-G" class="custom-range range-g" min="0" max="255" value="128"><span id="daily-val-G" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-b">B</label><input type="range" id="daily-B" class="custom-range range-b" min="0" max="255" value="128"><span id="daily-val-B" class="val-num">128</span></div>
+            </div>
+            <button id="daily-guess-btn" class="main-action-btn">GUESS</button>
         </section>
-        <section id="screen-result-matching" class="screen fade-in result-screen">
-            <h2 class="result-page-title">RESULT</h2><div class="score-display"><span class="score-label">SCORE</span><h1 id="matching-score">0</h1><p id="matching-new-record" class="new-record">NEW RECORD!</p></div><p id="matching-score-detail" class="score-detail"></p>
-            <div class="compare-row"><div class="compare-item"><p class="compare-label">TARGET</p><div id="matching-ans-color" class="mini-box"></div><span id="matching-ans-text"></span></div><div class="arrow">→</div><div class="compare-item"><p class="compare-label">YOU</p><div id="matching-your-color" class="mini-box"></div><span id="matching-your-text"></span></div></div>
-            <div class="stats-row"><div class="stat-box"><span class="stat-label">👑 BEST</span><span id="matching-pb" class="stat-value highlight">--</span></div><div class="stat-box"><span class="stat-label">📊 Ao5 BEST</span><span id="matching-ao5" class="stat-value highlight">--</span></div></div>
-            <div class="modal-buttons"><button onclick="matchingGame.retry()" class="btn-primary">RETRY</button><button onclick="matchingGame.resetData()" class="btn-text">Reset Data</button></div><div id="matching-history" class="history-log"></div>
+
+        <section id="screen-result-daily" class="screen fade-in result-screen daily-result-bg">
+            <div class="daily-res-header">
+                <span class="daily-res-label">DAILY CHALLENGE</span>
+                <span id="daily-res-date" class="daily-res-date">202X.XX.XX</span>
+            </div>
+            <div class="score-display"><span class="score-label">SCORE</span><h1 id="daily-score">0%</h1></div>
+            <div class="daily-compare-container">
+                <div class="daily-color-block">
+                    <p class="compare-label">TARGET</p>
+                    <div id="daily-ans-color" class="daily-big-box"></div>
+                    <span id="daily-ans-text" class="daily-rgb-text">0, 0, 0</span>
+                </div>
+                <div class="daily-color-block">
+                    <p class="compare-label">YOU</p>
+                    <div id="daily-your-color" class="daily-big-box"></div>
+                    <span id="daily-your-text" class="daily-rgb-text">0, 0, 0</span>
+                </div>
+            </div>
+            <div style="text-align:center; margin-bottom:30px; margin-top:20px; color:rgba(255,255,255,0.7); font-size:0.9rem;">
+                Next Color in: <span id="daily-next-timer" style="color:#fff; font-family:var(--font-mono); font-weight:bold;">--:--:--</span>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="app.backToMenu()" class="btn-primary">BACK TO MENU</button>
+            </div>
+        </section>
+
+        <section id="screen-rush" class="screen fade-in">
+            <div class="rush-hud">
+                <div class="rush-hud-item">
+                    <span class="rush-hud-label">TIME</span>
+                    <div id="rush-timer" class="rush-timer-big">60.00</div>
+                </div>
+                <div class="rush-hud-item">
+                    <span class="rush-hud-label">SCORE</span>
+                    <div id="rush-current-score" class="rush-score-val">0</div>
+                </div>
+            </div>
+            
+            <div id="rush-combo-display" class="rush-combo hidden">0 COMBO</div>
+            
+            <div id="rush-effect-container" style="position:fixed; top:30%; left:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:100;"></div>
+
+            <div class="color-display-area">
+                <div class="color-panel"><span class="panel-label">TARGET</span><div id="rush-question-color" class="color-box"></div></div>
+                <div class="color-panel"><span class="panel-label">YOURS</span><div id="rush-input-color" class="color-box"></div></div>
+            </div>
+            <div class="slider-container glass-panel">
+                <div class="slider-row"><label class="label-r">R</label><input type="range" id="rush-R" class="custom-range range-r" min="0" max="255" value="128"><span id="rush-val-R" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-g">G</label><input type="range" id="rush-G" class="custom-range range-g" min="0" max="255" value="128"><span id="rush-val-G" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-b">B</label><input type="range" id="rush-B" class="custom-range range-b" min="0" max="255" value="128"><span id="rush-val-B" class="val-num">128</span></div>
+            </div>
+            <button id="rush-guess-btn" class="main-action-btn" style="background:var(--accent-green);">GUESS</button>
+        </section>
+
+        <section id="screen-result-rush" class="screen fade-in result-screen">
+            <h2 class="result-page-title">RUSH RESULT</h2>
+            <div id="rush-new-record" class="new-record hidden">NEW HIGH SCORE!</div>
+            <div class="score-display"><span class="score-label">TOTAL SCORE</span><h1 id="rush-final-score">0</h1></div>
+            
+            <div class="stats-row">
+                <div class="stat-box"><span class="stat-label">Max Combo</span><span id="rush-max-combo" class="stat-value highlight">0</span></div>
+                <div class="stat-box"><span class="stat-label">Correct</span><span id="rush-count" class="stat-value">0</span></div>
+                <div class="stat-box"><span class="stat-label">Best Score</span><span id="rush-best" class="stat-value">--</span></div>
+            </div>
+
+            <div class="modal-buttons">
+                <button onclick="rushGame.init()" class="btn-primary" style="background:var(--accent-green);">RETRY</button>
+                <button onclick="app.backToMenu()" class="btn-text">Menu</button>
+                <button onclick="rushGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
+            </div>
         </section>
 
         <section id="screen-original" class="screen fade-in">
-            <div class="game-header"><h2 class="game-title color-original">Original</h2></div>
+            <div class="game-header"><h2 class="game-title color-original">Origin</h2></div>
             <div class="single-color-display"><div id="original-question-color" class="color-box large-box"><span class="overlay-text">?</span></div></div>
-            <div class="slider-container glass-panel"><div class="slider-row"><label class="label-r">R</label><input type="range" id="original-R" class="custom-range range-r" min="0" max="255" value="128"><span id="original-val-R" class="val-num">128</span></div><div class="slider-row"><label class="label-g">G</label><input type="range" id="original-G" class="custom-range range-g" min="0" max="255" value="128"><span id="original-val-G" class="val-num">128</span></div><div class="slider-row"><label class="label-b">B</label><input type="range" id="original-B" class="custom-range range-b" min="0" max="255" value="128"><span id="original-val-B" class="val-num">128</span></div></div>
+            <div class="slider-container glass-panel">
+                <div class="slider-row"><label class="label-r">R</label><input type="range" id="original-R" class="custom-range range-r" min="0" max="255" value="128"><span id="original-val-R" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-g">G</label><input type="range" id="original-G" class="custom-range range-g" min="0" max="255" value="128"><span id="original-val-G" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-b">B</label><input type="range" id="original-B" class="custom-range range-b" min="0" max="255" value="128"><span id="original-val-B" class="val-num">128</span></div>
+            </div>
             <button id="original-guess-btn" class="main-action-btn">GUESS</button>
         </section>
+
         <section id="screen-result-original" class="screen fade-in result-screen">
-            <h2 class="result-page-title">RESULT</h2><div class="score-display"><span class="score-label">SCORE</span><h1 id="original-score">0</h1><p id="original-new-record" class="new-record">NEW RECORD!</p></div>
-            <div class="compare-row"><div class="compare-item"><p class="compare-label">TARGET</p><div id="original-ans-color" class="mini-box"></div><span id="original-ans-text"></span></div><div class="compare-item"><p class="compare-label">YOU</p><div id="original-your-color" class="mini-box"></div><span id="original-your-text"></span></div></div>
-            <div class="stats-row"><div class="stat-box"><span class="stat-label">👑 BEST</span><span id="original-pb" class="stat-value highlight">--</span></div><div class="stat-box"><span class="stat-label">📊 Ao5 BEST</span><span id="original-ao5" class="stat-value highlight">--</span></div></div>
-            <div class="modal-buttons"><button onclick="originalGame.retry()" class="btn-primary">RETRY</button><button onclick="originalGame.resetData()" class="btn-text">Reset Data</button></div><div id="original-history" class="history-log"></div>
+            <h2 class="result-page-title">ORIGIN RESULT</h2>
+            <div id="original-new-record" class="new-record hidden">NEW RECORD!</div>
+            <div class="score-display"><span class="score-label">SCORE</span><h1 id="original-score">0%</h1></div>
+            <div class="compare-row">
+                <div class="compare-item"><p class="compare-label">TARGET</p><div id="original-ans-color" class="mini-box"></div><span id="original-ans-text"></span></div>
+                <div class="compare-item"><p class="compare-label">YOU</p><div id="original-your-color" class="mini-box"></div><span id="original-your-text"></span></div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-box"><span class="stat-label">Personal Best</span><span id="original-pb" class="stat-value highlight">--</span></div>
+                <div class="stat-box"><span class="stat-label">Ao5</span><span id="original-ao5" class="stat-value">--</span></div>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="originalGame.nextColor()" class="btn-primary">NEXT COLOR</button>
+                <button onclick="originalGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
+            </div>
+            <div id="original-history" class="history-log"></div>
         </section>
 
         <section id="screen-challenge" class="screen fade-in">
-            <div class="game-header"><h2 class="game-title color-challenge">Challenge</h2></div>
-            <div class="challenge-status-bar"><div class="challenge-info-top"><div><div class="stage-title">STAGE</div><div id="challenge-stage-num" class="stage-number-big">01</div></div><div class="goal-display"><div class="goal-label">TARGET SCORE</div><div id="challenge-aim-score" class="goal-val">1000</div></div></div></div>
-            <div class="single-color-display"><div id="challenge-sample" class="color-box large-box"></div></div>
-            <div class="slider-container glass-panel"><div class="slider-row"><label class="label-r">R</label><input type="range" id="challenge-R" class="custom-range range-r" min="0" max="255" value="128"><span id="challenge-val-R" class="val-num">128</span></div><div class="slider-row"><label class="label-g">G</label><input type="range" id="challenge-G" class="custom-range range-g" min="0" max="255" value="128"><span id="challenge-val-G" class="val-num">128</span></div><div class="slider-row"><label class="label-b">B</label><input type="range" id="challenge-B" class="custom-range range-b" min="0" max="255" value="128"><span id="challenge-val-B" class="val-num">128</span></div></div>
+            <div class="game-header"><h2 class="game-title color-challenge">Survival</h2></div>
+            <div class="challenge-status-bar">
+                <div class="challenge-info-top">
+                    <div><span class="stage-title">STAGE</span><div class="stage-number-big" id="challenge-stage-num">01</div></div>
+                    <div class="goal-display"><span class="goal-label">GOAL</span><div class="goal-val" id="challenge-aim-score">90.00%</div></div>
+                </div>
+            </div>
+            <div class="single-color-display"><div id="challenge-sample" class="color-box large-box"><span class="overlay-text">?</span></div></div>
+            <div class="slider-container glass-panel">
+                <div class="slider-row"><label class="label-r">R</label><input type="range" id="challenge-R" class="custom-range range-r" min="0" max="255" value="128"><span id="challenge-val-R" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-g">G</label><input type="range" id="challenge-G" class="custom-range range-g" min="0" max="255" value="128"><span id="challenge-val-G" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-b">B</label><input type="range" id="challenge-B" class="custom-range range-b" min="0" max="255" value="128"><span id="challenge-val-B" class="val-num">128</span></div>
+            </div>
             <button id="challenge-guess-btn" class="main-action-btn">GUESS</button>
         </section>
+
         <section id="screen-result-challenge" class="screen fade-in result-screen">
-            <h2 id="challenge-score-text" class="result-title-big">Clear!</h2><p id="challenge-new-record" class="new-record">NEW RECORD!</p>
-            <div class="result-score-block"><div class="score-item"><span class="label">SCORE</span><span id="challenge-result-score" class="val">0</span></div><div class="score-divider">/</div><div class="score-item"><span class="label">GOAL</span><span id="challenge-result-goal" class="val">0</span></div></div>
-            <div class="compare-row"><div class="compare-item"><p class="compare-label">TARGET</p><div id="challenge-ans-color" class="mini-box"></div><span id="challenge-ans-text"></span></div><div class="compare-item"><p class="compare-label">YOU</p><div id="challenge-your-color" class="mini-box"></div><span id="challenge-your-text"></span></div></div>
-            <div class="stats-row"><div class="stat-box"><span class="stat-label">🔥 MAX STAGE</span><span id="challenge-pb" class="stat-value highlight">--</span></div></div>
-            <div class="modal-buttons"><button id="challenge-next-btn" onclick="challengeGame.next()" class="btn-primary">NEXT STAGE</button><button onclick="challengeGame.resetData()" class="btn-text">Reset Challenge</button></div><div id="challenge-history" class="history-log"></div>
+            <h2 class="result-page-title">SURVIVAL RESULT</h2>
+            <div id="challenge-new-record" class="new-record hidden">MAX STAGE UPDATED!</div>
+            <h1 id="challenge-score-text" style="font-size:3rem; margin:10px 0;">Clear!</h1>
+            <div class="result-score-block">
+                <div class="score-item"><span class="label">SCORE</span><span id="challenge-result-score" class="val">0%</span></div>
+                <div class="score-divider">/</div>
+                <div class="score-item"><span class="label">GOAL</span><span id="challenge-result-goal" class="val" style="color:var(--accent-green)">0%</span></div>
+            </div>
+            <div class="compare-row">
+                <div class="compare-item"><p class="compare-label">TARGET</p><div id="challenge-ans-color" class="mini-box"></div><span id="challenge-ans-text"></span></div>
+                <div class="compare-item"><p class="compare-label">YOU</p><div id="challenge-your-color" class="mini-box"></div><span id="challenge-your-text"></span></div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-box">
+                    <span class="stat-label">MAX STAGE</span>
+                    <span id="challenge-pb" class="stat-value highlight">1</span>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="challenge-next-btn" class="btn-primary">NEXT STAGE</button>
+                <button onclick="challengeGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset</button>
+            </div>
+            <div id="challenge-history" class="history-log"></div>
         </section>
 
         <section id="screen-anotherworld" class="screen fade-in">
             <div class="game-header"><h2 class="game-title color-storage">Color Storage</h2></div>
-            <div class="single-color-display"><div id="another-input-color" class="color-box large-box"></div></div>
-            <div class="slider-container glass-panel"><div class="slider-row"><label class="label-r">R</label><input type="range" id="another-R" class="custom-range range-r" min="0" max="255" value="128"><span id="another-val-R" class="val-num">128</span></div><div class="slider-row"><label class="label-g">G</label><input type="range" id="another-G" class="custom-range range-g" min="0" max="255" value="128"><span id="another-val-G" class="val-num">128</span></div><div class="slider-row"><label class="label-b">B</label><input type="range" id="another-B" class="custom-range range-b" min="0" max="255" value="128"><span id="another-val-B" class="val-num">128</span></div></div>
-            <button onclick="anotherGame.saveColor()" class="main-action-btn">SAVE COLOR</button>
-            <div style="text-align: center; margin-bottom: 20px;"><button onclick="anotherGame.resetData()" class="btn-text">Reset All Memory</button></div>
-            <div id="another-history" class="history-log"></div>
+            <div class="slider-container glass-panel">
+                <div class="color-box large-box" id="another-input-color" style="margin-bottom:20px;"></div>
+                <div class="slider-row"><label class="label-r">R</label><input type="range" id="another-R" class="custom-range range-r" min="0" max="255" value="128"><span id="another-val-R" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-g">G</label><input type="range" id="another-G" class="custom-range range-g" min="0" max="255" value="128"><span id="another-val-G" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-b">B</label><input type="range" id="another-B" class="custom-range range-b" min="0" max="255" value="128"><span id="another-val-B" class="val-num">128</span></div>
+            </div>
+            <button class="main-action-btn" onclick="anotherGame.saveColor()">SAVE COLOR</button>
+            <div id="another-history" class="history-log" style="margin-top:30px;"></div>
+            <div style="text-align:center; margin-top:20px;"><button onclick="anotherGame.resetData()" class="btn-text" style="color:#555;">Delete All</button></div>
         </section>
 
-        <section id="screen-friend-menu" class="screen fade-in" style="text-align:center;">
-            <div class="game-header"><h2 class="game-title color-friend">Friend Battle</h2></div>
-            <div class="friend-name-area">
+        <section id="screen-multi-menu" class="screen fade-in" style="text-align:center;">
+            <div class="game-header"><h2 class="game-title color-multi">Versus</h2></div>
+            <div class="multi-name-area">
                 <p class="input-label">YOUR NAME (Max 6)</p>
-                <input type="text" id="friend-name-input" maxlength="6" placeholder="Player" class="name-input">
+                <input type="text" id="multi-name-input" maxlength="6" placeholder="Player" class="name-input">
             </div>
-
             <div class="setting-area">
                 <label style="color:#aaa; font-size:0.8rem; display:block; margin-bottom:5px;">GOAL (Wins)</label>
-                <input type="number" id="friend-goal-input" class="name-input" placeholder="5" value="5" min="0" style="width:100px; font-size:1.5rem; border-color:var(--primary-friend);">
+                <input type="number" id="multi-goal-input" class="name-input" placeholder="5" value="5" min="0" style="width:100px; font-size:1.5rem; border-color:var(--primary-multi);">
                 <p style="color:#666; font-size:0.7rem; margin-top:5px;">Enter "0" for Endless Mode</p>
             </div>
             <div class="menu-grid">
-                <div class="game-card" style="border-color:var(--primary-friend);" onclick="friendGame.createRoom()">
-                    <div class="card-icon">🏠</div><div class="card-content"><h3>CREATE ROOM</h3><p>部屋を作って招待</p></div>
+                <div class="game-card" style="border-color:var(--primary-multi);" onclick="multiGame.createRoom()">
+                    <div class="card-icon">🏠</div><div class="card-content"><h3>CREATE ROOM</h3><p>部屋を作成</p></div>
                 </div>
-                <div class="game-card" style="border-color:var(--primary-friend);" onclick="friendGame.showJoinScreen()">
-                    <div class="card-icon">🔑</div><div class="card-content"><h3>JOIN ROOM</h3><p>部屋番号で参加</p></div>
+                <div class="game-card" style="border-color:var(--primary-multi);" onclick="multiGame.showJoinScreen()">
+                    <div class="card-icon">🔑</div><div class="card-content"><h3>JOIN ROOM</h3><p>部屋に参加</p></div>
                 </div>
             </div>
         </section>
 
-        <section id="screen-friend-join" class="screen fade-in" style="text-align:center;">
-            <div class="game-header"><h2 class="game-title color-friend">Join Room</h2></div>
+        <section id="screen-multi-join" class="screen fade-in" style="text-align:center;">
+            <div class="game-header"><h2 class="game-title color-multi">Join Room</h2></div>
             <p>Enter 4-digit Room ID</p>
-            <input type="number" id="friend-room-input" placeholder="0000" class="room-id-input">
-            <button class="main-action-btn" onclick="friendGame.joinRoom()">JOIN</button>
+            <input type="tel" pattern="\d*" maxlength="4" id="multi-room-input" placeholder="0000" class="room-id-input" style="border-bottom-color:var(--primary-multi);">
+            <button class="main-action-btn" onclick="multiGame.joinRoom()">JOIN</button>
         </section>
 
-        <section id="screen-friend-lobby" class="screen fade-in" style="text-align:center;">
-            <div class="game-header"><h2 class="game-title color-friend">Lobby</h2></div>
+        <section id="screen-multi-lobby" class="screen fade-in" style="text-align:center;">
+            <div class="game-header"><h2 class="game-title color-multi">Lobby</h2></div>
             <p>Share this Room ID</p>
-            <div id="friend-room-id-display" class="room-id-display">----</div>
+            <div id="multi-room-id-display" class="room-id-display" style="color:var(--primary-multi);">----</div>
+            <div id="multi-lobby-goal" style="color:#fff; font-family:var(--font-mono); margin-bottom:15px; font-weight:bold;">GOAL: ---</div>
             
-            <div id="friend-lobby-goal" style="color:#fff; font-family:var(--font-mono); margin-bottom:15px; font-weight:bold;">
-                GOAL: ---
+            <div class="multi-lobby-slots">
+                <div id="lobby-slot-1" class="multi-lobby-slot slot-filled"><span class="slot-name">---</span><span class="slot-status">HOST</span></div>
+                <div id="lobby-slot-2" class="multi-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
+                <div id="lobby-slot-3" class="multi-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
+                <div id="lobby-slot-4" class="multi-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
             </div>
-            <div class="loading-spinner"></div>
-            <p id="friend-status-text" class="status-text">Waiting for friend...</p>
+
+            <div id="host-start-area" class="hidden" style="margin-top:20px;">
+                <button onclick="multiGame.hostStartGame()" class="main-action-btn" style="background:var(--primary-multi);">START GAME</button>
+            </div>
+            <p id="multi-status-text" class="status-text" style="margin-top:20px;">Waiting for players...</p>
         </section>
 
-        <section id="screen-friend-battle" class="screen fade-in">
-            <div class="game-header"><h2 class="game-title color-friend">Battle</h2><div id="friend-round-display" class="digital-timer" style="font-size:1rem;">Round 1</div></div>
-            <div id="friend-opponent-status" class="opponent-status-bar">Opponent is thinking...</div>
-            <div class="single-color-display"><div id="friend-question-color" class="color-box large-box"><span class="overlay-text">?</span></div></div>
+        <section id="screen-multi-battle" class="screen fade-in">
+            <div class="game-header"><h2 class="game-title color-multi">Battle</h2><div id="multi-round-display" class="digital-timer" style="font-size:1rem;">Round 1</div></div>
+            <div id="multi-opponent-status" class="opponent-status-bar" style="background:rgba(156, 136, 255, 0.1); color:var(--primary-multi); border-color:rgba(156, 136, 255, 0.2);">Waiting for answers...</div>
+            <div class="single-color-display"><div id="multi-question-color" class="color-box large-box"></div></div>
             <div class="slider-container glass-panel">
-                <div class="slider-row"><label class="label-r">R</label><input type="range" id="friend-R" class="custom-range range-r" min="0" max="255" value="128"><span id="friend-val-R" class="val-num">128</span></div>
-                <div class="slider-row"><label class="label-g">G</label><input type="range" id="friend-G" class="custom-range range-g" min="0" max="255" value="128"><span id="friend-val-G" class="val-num">128</span></div>
-                <div class="slider-row"><label class="label-b">B</label><input type="range" id="friend-B" class="custom-range range-b" min="0" max="255" value="128"><span id="friend-val-B" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-r">R</label><input type="range" id="multi-R" class="custom-range range-r" min="0" max="255" value="128"><span id="multi-val-R" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-g">G</label><input type="range" id="multi-G" class="custom-range range-g" min="0" max="255" value="128"><span id="multi-val-G" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-b">B</label><input type="range" id="multi-B" class="custom-range range-b" min="0" max="255" value="128"><span id="multi-val-B" class="val-num">128</span></div>
             </div>
-            <button id="friend-guess-btn" class="main-action-btn" onclick="friendGame.submitGuess()">GUESS</button>
-            <p id="friend-wait-msg" class="hidden" style="text-align:center; color:#888;">Waiting for opponent...</p>
+            <button id="multi-guess-btn" class="main-action-btn" onclick="multiGame.submitGuess()">GUESS</button>
+            <p id="multi-wait-msg" class="hidden" style="text-align:center; color:#888;">Waiting for others...</p>
         </section>
 
-        <section id="screen-friend-result" class="screen fade-in result-screen">
-            <h2 id="friend-result-title" class="result-title-big">WIN!</h2>
-            <div id="friend-final-winner" class="hidden winner-declare"></div>
-
-            <div class="friend-result-main">
-                <div class="f-res-box">
-                    <span id="friend-my-score" class="f-res-score">0</span>
-                    <span id="friend-name-p1" class="f-res-name">YOU</span>
-                    <span class="f-res-you">(YOU)</span>
-                </div>
-                <div class="f-res-vs">VS</div>
-                <div class="f-res-box">
-                    <span id="friend-op-score" class="f-res-score">0</span>
-                    <span id="friend-name-p2" class="f-res-name">OPP</span>
-                    <span class="f-res-opp">(OPP)</span>
-                </div>
-            </div>
-
-            <div class="friend-stats-board">
-                <span class="f-stat-label">TOTAL&nbsp;</span>
-                <span id="f-stat-name-1" class="f-stat-name">YOU</span>
-                <span class="f-stat-total" id="f-stat-score-val">0 - 0</span>
-                <span id="f-stat-name-2" class="f-stat-name">OPP</span>
-            </div>
+        <section id="screen-multi-result" class="screen fade-in result-screen">
+            <h2 id="multi-result-title" class="result-title-style">ROUND WINNER!</h2>
+            <div id="multi-final-winner" class="hidden winner-declare"></div>
             
-            <div style="text-align:center; font-family:var(--font-mono); font-size:0.8rem; margin-top:-15px; margin-bottom:15px; color:#888;">
-                GOAL: <span id="friend-goal-val" style="color:#fff; font-weight:bold;">5</span>
-            </div>
+            <div id="multi-result-container"></div>
 
-            <div class="compare-row" style="flex-wrap:wrap;">
-                <div class="compare-item"><p class="compare-label">TARGET</p><div id="friend-ans-color" class="mini-box"></div><span id="friend-ans-text"></span></div>
-                <div class="compare-item"><p id="friend-label-you" class="compare-label">YOU</p><div id="friend-my-color" class="mini-box"></div><span id="friend-my-text"></span></div>
-                <div class="compare-item"><p id="friend-label-op" class="compare-label">OPP</p><div id="friend-op-color" class="mini-box"></div><span id="friend-op-text"></span></div>
+            <div style="text-align:center; font-family:var(--font-mono); font-size:0.8rem; margin-top:20px; margin-bottom:10px; color:#888;">GOAL: <span id="multi-goal-val" style="color:#fff; font-weight:bold;">5</span></div>
+
+            <div class="multi-compare-wrapper">
+                <div class="multi-compare-target">
+                    <p class="multi-compare-label" style="color:#fff; font-size:0.9rem;">TARGET</p>
+                    <div id="multi-ans-color" class="mini-box large-target-box"></div>
+                    <span id="multi-ans-text" class="rgb-value-text"></span>
+                </div>
+                <div id="multi-players-compare" class="multi-players-wrapper"></div>
             </div>
 
             <div class="modal-buttons">
-                <button id="friend-continue-btn" onclick="friendGame.voteContinue()" class="btn-primary">CONTINUE</button>
-                <button onclick="friendGame.confirmExit()" class="btn-text">Exit Room</button>
+                <button id="multi-continue-btn" onclick="multiGame.voteContinue()" class="btn-primary">CONTINUE</button>
+                <button onclick="multiGame.confirmExit()" class="btn-text">Exit Room</button>
             </div>
-            <p id="friend-continue-status" style="color:#888; font-size:0.8rem; margin-top:-10px; min-height:1.2em;"></p>
-        </section>
-        
-        
-        
-        
-        <section id="screen-party-menu" class="screen fade-in" style="text-align:center;">
-            <div class="game-header"><h2 class="game-title color-party">Party Battle</h2></div>
-            <div class="friend-name-area">
-                <p class="input-label">YOUR NAME (Max 6)</p>
-                <input type="text" id="party-name-input" maxlength="6" placeholder="Player" class="name-input">
-            </div>
-            
-            <div class="setting-area">
-                <label style="color:#aaa; font-size:0.8rem; display:block; margin-bottom:5px;">GOAL (Wins)</label>
-                <input type="number" id="party-goal-input" class="name-input" placeholder="5" value="5" min="0" style="width:100px; font-size:1.5rem; border-color:var(--primary-party);">
-                <p style="color:#666; font-size:0.7rem; margin-top:5px;">Enter "0" for Endless Mode</p>
-            </div>
-            <div class="menu-grid">
-                <div class="game-card" style="border-color:var(--primary-party);" onclick="partyGame.createRoom()">
-                    <div class="card-icon">🏠</div><div class="card-content"><h3>CREATE ROOM</h3><p>3人部屋を作成</p></div>
-                </div>
-                <div class="game-card" style="border-color:var(--primary-party);" onclick="partyGame.showJoinScreen()">
-                    <div class="card-icon">🔑</div><div class="card-content"><h3>JOIN ROOM</h3><p>部屋番号で参加</p></div>
-                </div>
-            </div>
+            <p id="multi-continue-status" style="color:#888; font-size:0.8rem; margin-top:-10px; min-height:1.2em;"></p>
         </section>
 
-        <section id="screen-party-join" class="screen fade-in" style="text-align:center;">
-            <div class="game-header"><h2 class="game-title color-party">Join Party</h2></div>
-            <p>Enter 4-digit Room ID</p>
-            <input type="number" id="party-room-input" placeholder="0000" class="room-id-input" style="border-bottom-color:var(--primary-party);">
-            <button class="main-action-btn" onclick="partyGame.joinRoom()">JOIN</button>
-        </section>
-
-        <section id="screen-party-lobby" class="screen fade-in" style="text-align:center;">
-            <div class="game-header"><h2 class="game-title color-party">Lobby</h2></div>
-            <p>Share this Room ID</p>
-            <div id="party-room-id-display" class="room-id-display" style="color:var(--primary-party);">----</div>
-            
-            <div id="party-lobby-goal" style="color:#fff; font-family:var(--font-mono); margin-bottom:15px; font-weight:bold;">
-                GOAL: ---
-            </div>
-            <div class="loading-spinner" style="border-left-color:var(--primary-party);"></div>
-            <p id="party-status-text" class="status-text">Waiting for players (1/3)...</p>
-            <div style="margin-top:20px; font-size:0.9rem; color:#aaa;">
-                <p id="party-p1-name">Host: ---</p>
-                <p id="party-p2-name">Guest 1: ---</p>
-                <p id="party-p3-name">Guest 2: ---</p>
-            </div>
-        </section>
-
-        <section id="screen-party-battle" class="screen fade-in">
-            <div class="game-header"><h2 class="game-title color-party">Party</h2><div id="party-round-display" class="digital-timer" style="font-size:1rem;">Round 1</div></div>
-            <div id="party-opponent-status" class="opponent-status-bar" style="background:rgba(0, 210, 211, 0.1); color:var(--primary-party); border-color:rgba(0, 210, 211, 0.2);">
-                Waiting for others...
-            </div>
-            <div class="single-color-display"><div id="party-question-color" class="color-box large-box"><span class="overlay-text">?</span></div></div>
-            <div class="slider-container glass-panel">
-                <div class="slider-row"><label class="label-r">R</label><input type="range" id="party-R" class="custom-range range-r" min="0" max="255" value="128"><span id="party-val-R" class="val-num">128</span></div>
-                <div class="slider-row"><label class="label-g">G</label><input type="range" id="party-G" class="custom-range range-g" min="0" max="255" value="128"><span id="party-val-G" class="val-num">128</span></div>
-                <div class="slider-row"><label class="label-b">B</label><input type="range" id="party-B" class="custom-range range-b" min="0" max="255" value="128"><span id="party-val-B" class="val-num">128</span></div>
-            </div>
-            <button id="party-guess-btn" class="main-action-btn" onclick="partyGame.submitGuess()">GUESS</button>
-            <p id="party-wait-msg" class="hidden" style="text-align:center; color:#888;">Waiting for others...</p>
-        </section>
-
-        <section id="screen-party-result" class="screen fade-in result-screen">
-            <h2 id="party-result-title" class="result-title-big">RESULT</h2>
-            <div id="party-final-winner" class="hidden winner-declare"></div>
-
-            <div class="party-result-main">
-                <div class="p-res-box order-2">
-                    <span class="p-res-rank rank-2">2nd</span>
-                    <span id="party-score-2" class="p-res-score">0</span>
-                    <span id="party-name-2" class="p-res-name">Player2</span>
-                </div>
-                <div class="p-res-box order-1">
-                    <span class="p-res-rank rank-1">1st</span>
-                    <span id="party-score-1" class="p-res-score">0</span>
-                    <span id="party-name-1" class="p-res-name">Player1</span>
-                    <span id="party-you-1" class="p-res-you"></span>
-                </div>
-                <div class="p-res-box order-3">
-                    <span class="p-res-rank rank-3">3rd</span>
-                    <span id="party-score-3" class="p-res-score">0</span>
-                    <span id="party-name-3" class="p-res-name">Player3</span>
-                </div>
-            </div>
-
-            <div class="party-stats-container">
-                <div class="p-stat-item">
-                    <span class="p-stat-label">WINS</span><span id="p-win-host" class="p-stat-val">0</span><span id="p-name-host" class="p-stat-name-disp">Host</span>
-                </div>
-                <div class="p-stat-item">
-                    <span class="p-stat-label">WINS</span><span id="p-win-guest" class="p-stat-val">0</span><span id="p-name-guest" class="p-stat-name-disp">Guest</span>
-                </div>
-                <div class="p-stat-item">
-                    <span class="p-stat-label">WINS</span><span id="p-win-guest2" class="p-stat-val">0</span><span id="p-name-guest2" class="p-stat-name-disp">Guest2</span>
-                </div>
-                <div class="p-stat-item" style="border-left:1px solid #555; padding-left:10px; margin-left:10px;">
-                    <span class="p-stat-label" style="color:var(--accent-gold);">GOAL</span>
-                    <span id="p-goal-val" class="p-stat-val" style="color:#fff;">5</span>
-                </div>
-            </div>
-
-            <div class="party-compare-container">
-                <div class="party-players-row">
-                    <div class="party-compare-item">
-                        <p class="compare-label" id="party-label-p1">P1</p>
-                        <div id="party-p1-color" class="mini-box"></div><span id="party-p1-text" style="font-size:0.6rem;"></span>
-                    </div>
-                    <div class="party-compare-item">
-                        <p class="compare-label" id="party-label-p2">P2</p>
-                        <div id="party-p2-color" class="mini-box"></div><span id="party-p2-text" style="font-size:0.6rem;"></span>
-                    </div>
-                    <div class="party-compare-item">
-                        <p class="compare-label" id="party-label-p3">P3</p>
-                        <div id="party-p3-color" class="mini-box"></div><span id="party-p3-text" style="font-size:0.6rem;"></span>
-                    </div>
-                </div>
-                <div class="party-target-row">
-                    <div class="party-compare-item">
-                        <p class="compare-label">TARGET</p>
-                        <div id="party-ans-color" class="mini-box"></div><span id="party-ans-text" style="font-size:0.6rem;"></span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-buttons">
-                <button id="party-continue-btn" onclick="partyGame.voteContinue()" class="btn-primary">CONTINUE</button>
-                <button onclick="partyGame.confirmExit()" class="btn-text">Exit Room</button>
-            </div>
-            <p id="party-continue-status" style="color:#888; font-size:0.8rem; margin-top:-10px; min-height:1.2em;"></p>
-        </section>
     </main>
 
     <footer class="app-footer">
