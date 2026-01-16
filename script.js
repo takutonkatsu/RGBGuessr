@@ -57,7 +57,6 @@ const app = {
         }
         window.scrollTo(0, 0);
 
-        // Save state for reload
         if (['origin', 'rush', 'survival', 'versus', 'daily', 'anotherworld', 'menu'].includes(screenId)) {
             localStorage.setItem('current_screen', screenId);
         }
@@ -68,7 +67,7 @@ const app = {
             versusGame.confirmExit();
         } else {
             if (dailyGame.timerInterval) clearInterval(dailyGame.timerInterval);
-            if (rushGame && rushGame.timerInterval) clearInterval(rushGame.timerInterval); // ★追加
+            if (rushGame.timerInterval) clearInterval(rushGame.timerInterval);
             this.showScreen('menu');
         }
     },
@@ -227,11 +226,8 @@ const menuLogic = {
 
 // ▼ Game Modes
 
-// Origin Mode (Updated Share)
+// Origin Mode
 const originGame = {
-    // ... (init, retry, nextColor, guess, showResult, updateHistory, resetData は既存のまま) ...
-    // ※ 既存のメソッドはそのまま使用してください
-
     questionColor: {},
     init: function() {
         this.els = { R: document.getElementById('origin-R'), G: document.getElementById('origin-G'), B: document.getElementById('origin-B'), valR: document.getElementById('origin-val-R'), valG: document.getElementById('origin-val-G'), valB: document.getElementById('origin-val-B'), qColor: document.getElementById('origin-question-color') };
@@ -299,59 +295,44 @@ const originGame = {
     resetData: function() { 
         app.confirm("Originモードの記録を削除しますか？", (y)=>{ if(y){ const keys = Object.keys(localStorage); keys.forEach(k => { if (k === "index" || k.startsWith("score") || k.startsWith("answer_") || k.startsWith("input_") || k.startsWith("Ao5")) { localStorage.removeItem(k); } }); localStorage.removeItem("my_1record"); localStorage.removeItem("my_ao5record"); localStorage.removeItem("RGB_Temporary_Hex"); location.reload(); } }) 
     },
-
-    // ★修正: Canvas描画ロジックの改善
     shareResult: function() {
         const canvas = document.getElementById('share-canvas');
         const ctx = canvas.getContext('2d');
         const score = document.getElementById('origin-score').innerText;
-        const ao5 = document.getElementById('origin-ao5').innerText;
         const val = Number(localStorage.getItem("index")) || 1;
-        const count = val - 1; // 直前のプレイ回数
+        const count = val - 1; 
+        const currentAo5 = localStorage.getItem("Ao5" + count) || "--";
         const targetHex = this.questionColor.hex;
-        // 入力色は保存されていないため、画面から取得
         const r = document.getElementById('origin-R').value;
         const g = document.getElementById('origin-G').value;
         const b = document.getElementById('origin-B').value;
         const inputHex = utils.rgbToHex(Number(r), Number(g), Number(b));
 
-        // Background
         const grad = ctx.createLinearGradient(0, 0, 600, 400);
         grad.addColorStop(0, '#1a1a2e'); grad.addColorStop(1, '#16213e');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, 600, 400);
 
-        // Icon
         const img = document.getElementById('source-logo-icon');
         if (img && img.complete) { ctx.drawImage(img, 25, 25, 50, 50); }
-        
-        // Header
         ctx.font = '900 32px "Inter", sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText("RETINA", 90, 65);
         ctx.font = '700 16px "JetBrains Mono", monospace'; ctx.fillStyle = '#ff4757'; ctx.fillText("ORIGIN MODE", 450, 65);
 
-        // Info Line
         ctx.beginPath(); ctx.moveTo(30, 90); ctx.lineTo(570, 90); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.stroke();
-        ctx.font = '16px "JetBrains Mono", monospace'; ctx.fillStyle = '#aaa'; ctx.textAlign = 'left'; ctx.fillText(`Try #${count}`, 30, 120);
-        ctx.textAlign = 'right'; ctx.fillText(`AO5 Best: ${ao5}`, 570, 120);
+        ctx.font = '16px "JetBrains Mono", monospace'; ctx.fillStyle = '#aaa'; ctx.textAlign = 'left'; ctx.fillText(`Attempt #${count}`, 30, 120);
+        ctx.textAlign = 'right'; ctx.fillText(`Ao5: ${currentAo5}%`, 570, 120);
 
-        // Score
         ctx.font = '900 90px "Inter", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff'; ctx.fillText(score, 300, 220);
-        
-        // Colors
-        const drawColor = (x, y, color, label) => {
-            // Label
-            ctx.font = 'bold 14px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 55);
-            // Circle
-            ctx.save();
-            ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
-            ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke();
-            ctx.restore();
-            // Hex text
-            ctx.font = '14px "JetBrains Mono", monospace'; ctx.fillStyle = '#fff'; ctx.fillText(color.toUpperCase(), x, y + 60);
-        };
-        drawColor(200, 310, targetHex, "TARGET");
-        drawColor(400, 310, inputHex, "YOU");
+        ctx.font = '20px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.fillText("SCORE", 300, 150);
 
-        // Footer
+        const drawColor = (x, y, color, label) => {
+            ctx.font = 'bold 14px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 55);
+            ctx.save(); ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+            ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke(); ctx.restore();
+            const rgbStr = utils.hexToRgbString(color);
+            ctx.font = '14px "JetBrains Mono", monospace'; ctx.fillStyle = '#fff'; ctx.fillText(rgbStr, x, y + 60);
+        };
+        drawColor(200, 310, targetHex, "TARGET"); drawColor(400, 310, inputHex, "YOU");
+
         ctx.font = '12px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'center'; ctx.fillText("rgb-guessr.web.app", 300, 385);
 
         canvas.toBlob(blob => {
@@ -438,7 +419,7 @@ const rushGame = {
     resetData: function() { app.confirm("Reset Rush Records?", (y) => { if(y) { localStorage.removeItem('rush_best'); location.reload(); } }); }
 };
 
-// Survival Mode (formerly Challenge)
+// Survival Mode
 const survivalGame = {
     aimScores: ["50.00", "60.00", "70.00", "75.00", "80.00", "85.00", "88.00", "90.00", "91.00", "92.00", "93.00", "94.00", "95.00", "95.50", "96.00", "96.50", "97.00", "97.50", "98.00", "98.50", "99.00", "99.30", "99.60", "99.90", "100.00"],
     currentStage: 1, questionColor: {},
@@ -557,16 +538,13 @@ const anotherGame = {
     }
 };
 
-// Daily Game Mode (Updated Share)
+// ▼ Daily Game Logic (Updated Share)
 const dailyGame = {
-    // ... (init, guess, showResult, startTimer, resetData は既存のまま) ...
-
     targetColor: {}, dateStr: "", timerInterval: null, els:{},
     init: function() {
         if(this.timerInterval) clearInterval(this.timerInterval);
         this.els = { R: document.getElementById('daily-R'), G: document.getElementById('daily-G'), B: document.getElementById('daily-B'), valR: document.getElementById('daily-val-R'), valG: document.getElementById('daily-val-G'), valB: document.getElementById('daily-val-B'), qColor: document.getElementById('daily-question-color') };
         
-        // Ensure listener is added
         const guessBtn = document.getElementById('daily-guess-btn');
         if(guessBtn) guessBtn.onclick = () => this.guess();
 
@@ -603,7 +581,7 @@ const dailyGame = {
         document.getElementById('daily-res-date').innerText = utils.getFormattedDate();
         document.getElementById('daily-score').innerText = score + "%";
         document.getElementById('daily-ans-color').style.backgroundColor = target.hex;
-        document.getElementById('daily-ans-text').innerText = `${target.r}, ${target.g}, ${target.b}`; 
+        document.getElementById('daily-ans-text').innerText = `${target.r},${target.g},${target.b}`; 
         document.getElementById('daily-your-color').style.backgroundColor = inputHex;
         document.getElementById('daily-your-text').innerText = utils.hexToRgbString(inputHex);
         this.startTimer();
@@ -625,7 +603,7 @@ const dailyGame = {
         this.timerInterval = setInterval(updateTimer, 1000);
     },
 
-    // ★修正: Canvas描画ロジックの改善 (Originとデザイン統一)
+    // Share Logic
     shareResult: function() {
         const canvas = document.getElementById('share-canvas');
         const ctx = canvas.getContext('2d');
@@ -634,39 +612,28 @@ const dailyGame = {
         const targetHex = this.targetColor.hex;
         const savedInputHex = localStorage.getItem("daily_input_hex_" + this.dateStr) || "#000000";
         
-        // Background
         const grad = ctx.createLinearGradient(0, 0, 600, 400);
         grad.addColorStop(0, '#1a1a2e'); grad.addColorStop(1, '#16213e');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, 600, 400);
 
-        // Icon
         const img = document.getElementById('source-logo-icon');
         if (img && img.complete) { ctx.drawImage(img, 25, 25, 50, 50); }
-        
-        // Header
         ctx.font = '900 32px "Inter", sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText("RETINA", 90, 65);
         ctx.font = '700 16px "JetBrains Mono", monospace'; ctx.fillStyle = '#ffd700'; ctx.fillText("DAILY CHALLENGE", 420, 65);
 
-        // Info Line
         ctx.beginPath(); ctx.moveTo(30, 90); ctx.lineTo(570, 90); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.stroke();
         ctx.font = '16px "JetBrains Mono", monospace'; ctx.fillStyle = '#aaa'; ctx.textAlign = 'center'; ctx.fillText(dateText, 300, 120);
 
-        // Score
         ctx.font = '900 90px "Inter", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff'; ctx.fillText(score, 300, 220);
         
-        // Colors
         const drawColor = (x, y, color, label) => {
             ctx.font = 'bold 14px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 55);
-            ctx.save();
-            ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
-            ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke();
-            ctx.restore();
-            ctx.font = '14px "JetBrains Mono", monospace'; ctx.fillStyle = '#fff'; ctx.fillText(color.toUpperCase(), x, y + 60);
+            ctx.save(); ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+            ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke(); ctx.restore();
+            // No Text
         };
-        drawColor(200, 310, targetHex, "TARGET");
-        drawColor(400, 310, savedInputHex, "YOU");
+        drawColor(200, 310, targetHex, "TARGET"); drawColor(400, 310, savedInputHex, "YOU");
 
-        // Footer
         ctx.font = '12px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'center'; ctx.fillText("rgb-guessr.web.app", 300, 385);
 
         canvas.toBlob(blob => {
@@ -679,10 +646,8 @@ const dailyGame = {
         });
     }
 };
-// ... (Firebase Config, app, utils, menuLogic, originGame, rushGame, survivalGame, anotherGame, dailyGame are unchanged) ...
-// ※ここでは省略していますが、必ず前回のコードを使用してください。
 
-// ▼ 6. VERSUS MODE (Unified 2-4 Players) - FIXED Lobby
+// ▼ VERSUS MODE (Unified 2-4 Players)
 const versusGame = {
     roomId: null, role: null, roomRef: null,
     myName: "Player", currentRound: 0, 
@@ -690,7 +655,6 @@ const versusGame = {
     createRoom: function() {
         const name = document.getElementById('versus-name-input').value.trim();
         if(!name) return app.alert("Please enter your name.");
-        
         let maxWins = parseInt(document.getElementById('versus-goal-input').value);
         if (isNaN(maxWins) || maxWins < 0) maxWins = 5;
 
@@ -701,10 +665,7 @@ const versusGame = {
         this.roomRef = db.ref('rooms_versus/' + this.roomId);
         
         this.roomRef.set({
-            state: 'waiting', 
-            question: utils.randColor(), 
-            round: 1,
-            maxWins: maxWins, 
+            state: 'waiting', question: utils.randColor(), round: 1, maxWins: maxWins, 
             players: {
                 p1: { name: this.myName, score: 0, status: 'waiting' },
                 p2: { name: '', score: 0, status: 'empty' },
@@ -789,7 +750,6 @@ const versusGame = {
             const goalText = (data.maxWins > 0) ? `First to ${data.maxWins} Wins` : "Endless Mode";
             document.getElementById('versus-lobby-goal').innerText = `GOAL: ${goalText}`;
 
-            // ★修正: シンプルなテキストリスト更新
             ['p1', 'p2', 'p3', 'p4'].forEach((key, i) => {
                 const el = document.getElementById(`versus-${key}-name`);
                 const p = data.players[key];
@@ -848,9 +808,6 @@ const versusGame = {
         });
     },
 
-    // ... (hostStartGame, startRound, updateColor, submitGuess, calcResult, showResult, voteContinue, nextRound, confirmExit, exitRoom は前回のまま) ...
-    // ※文字数制限のため省略。前回のコードをそのまま使用してください。
-    
     hostStartGame: function() { this.roomRef.update({ state: 'playing' }); },
 
     startRound: function(data) {
@@ -946,11 +903,9 @@ const versusGame = {
 
 document.getElementById('versus-room-input').addEventListener('input', function(e) { this.value = this.value.replace(/[^0-9]/g, ''); });
 
-// ▼ Initialize App
 window.onload = function() {
     const savedScreen = localStorage.getItem('current_screen');
     menuLogic.init();
-
     if (savedScreen && savedScreen !== 'menu') {
         if (savedScreen === 'origin') originGame.init();
         else if (savedScreen === 'rush') rushGame.init();
@@ -958,7 +913,5 @@ window.onload = function() {
         else if (savedScreen === 'daily') dailyGame.init();
         else if (savedScreen === 'anotherworld') anotherGame.init();
         app.showScreen(savedScreen);
-    } else {
-        app.showScreen('menu');
-    }
+    } else { app.showScreen('menu'); }
 };

@@ -73,8 +73,6 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .card-content p { margin: 4px 0 0; font-size: 0.75rem; color: var(--text-muted); }
 .record-badge { display: inline-block; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; font-family: var(--font-mono); color: #eee; margin-top: 6px; line-height: 1.4; }
 .record-badge span { color: var(--accent-yellow); font-weight: bold; }
-
-/* Origin Badge */
 .std-badge { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; font-size: 0.65rem; font-weight: 900; padding: 4px 8px; border-bottom-left-radius: 10px; letter-spacing: 1px; box-shadow: -2px 2px 5px rgba(0,0,0,0.3); z-index: 10; }
 
 /* Explanation */
@@ -134,8 +132,50 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .stat-value { font-family: var(--font-mono); font-size: 1.2rem; font-weight: bold; color: #fff; }
 .stat-value.highlight { color: var(--accent-yellow); text-shadow: 0 0 10px rgba(255, 165, 2, 0.3); }
 .modal-buttons { display: grid; gap: 12px; margin-bottom: 25px; padding: 0 15px; }
-.btn-primary { background: var(--text-main); color: var(--bg-dark); border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-.btn-primary:disabled { background: #555; color: #888; cursor: not-allowed; opacity: 0.7; }
+
+/* ★変更: btn-primaryを緑ベースにして、青いシェアボタンと区別する */
+.btn-primary { 
+    background: linear-gradient(135deg, #2ed573, #1dd1a1); /* Greenish */
+    color: #fff; 
+    border: none; 
+    padding: 14px; 
+    border-radius: 12px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    font-size: 1rem; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 213, 115, 0.6); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { background: #555; color: #888; cursor: not-allowed; opacity: 0.7; box-shadow: none; }
+.btn-icon { font-size: 1.2rem; }
+
+/* Share Button Style */
+.btn-share {
+    background: linear-gradient(135deg, #1DA1F2, #0077b5);
+    color: #fff;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(29, 161, 242, 0.4);
+}
+.btn-share:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(29, 161, 242, 0.6); }
+.btn-share:active { transform: scale(0.98); }
+.share-icon { font-size: 1.2rem; }
+
 .btn-text { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; text-decoration: underline; }
 
 /* History List */
@@ -182,7 +222,7 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .history-goal-text { font-size: 0.6rem; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; margin-top: 2px; }
 .stage-badge-history { font-family: var(--font-mono); font-weight: bold; color: var(--bg-dark); background: var(--text-muted); padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; display: inline-block; white-space: nowrap; }
 
-/* Versus (Multiplayer) Styles */
+/* Multiplayer Styles */
 .multi-name-area { margin-bottom: 25px; }
 .input-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 1px; }
 .name-input { font-size: 1.1rem; font-family: var(--font-mono); text-align: center; width: 180px; background: transparent; border: none; border-bottom: 2px solid var(--text-muted); color: #fff; padding: 4px; outline: none; transition: 0.3s; }
@@ -204,11 +244,9 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 
 .result-title-style { margin: 0 0 10px; font-size: 1.8rem; letter-spacing: 1px; font-weight: 700; color: #ccc; }
 .winner-declare { font-size: 1.3rem; color: var(--accent-gold); font-weight: 900; animation: pulse 1s infinite; margin-bottom: 8px; }
-
 .res-grid-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 15px; width: 100%; }
 .res-grid-box { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; position: relative; border: 1px solid rgba(255,255,255,0.1); width: 45%; max-width: 130px; }
 .res-grid-container.players-3 .res-grid-box { width: 32%; max-width: none; }
-
 .res-grid-rank { font-size: 1.1rem; font-weight: 900; font-style: italic; margin-bottom: 2px; }
 .rank-1st { color: var(--accent-gold); font-size: 1.4rem; }
 .rank-2nd { color: #c0c0c0; }
@@ -228,7 +266,7 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .multi-compare-label { font-size: 0.7rem; color: #aaa; margin-bottom: 4px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .rgb-value-text { display: block; font-family: var(--font-mono); font-size: 0.65rem; color: #888; margin-top: 2px; }
 
-/* Daily Result (Compact) */
+/* Daily Result Styling (Compact) */
 .daily-result-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 20px; padding: 25px 15px; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
 .daily-res-header { margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
 .daily-res-label { display: block; font-size: 0.75rem; letter-spacing: 3px; color: var(--accent-gold); font-weight: bold; margin-bottom: 4px; }
@@ -260,35 +298,38 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 @keyframes rainbow-text { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
 
-/* ... (既存スタイル) ... */
-
-/* Share Button Style */
-.btn-share {
-    background: linear-gradient(135deg, #1DA1F2, #0077b5);
-    color: #fff;
-    border: none;
-    padding: 14px;
-    border-radius: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 15px rgba(29, 161, 242, 0.4);
+/* Rush Mode Styles (Revised Header) */
+.rush-header-info { 
+    display: flex; 
+    gap: 20px; 
+    text-align: right; 
+    align-items: flex-end; 
 }
-
-.btn-share:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(29, 161, 242, 0.6);
+.rush-info-item { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-end; 
 }
-
-.btn-share:active {
-    transform: scale(0.98);
+.rush-label { 
+    font-size: 0.7rem; 
+    color: #aaa; 
+    font-weight: bold; 
+    letter-spacing: 1px; 
+    line-height: 1; 
+    margin-bottom: 2px;
 }
-
-.share-icon {
-    font-size: 1.2rem;
+.rush-val-time { 
+    font-family: var(--font-mono); 
+    font-size: 2.2rem; /* 少し小さく */
+    font-weight: 900; 
+    color: var(--accent-green); 
+    line-height: 1; 
+    text-shadow: 0 0 15px rgba(46, 213, 115, 0.3); 
+}
+.rush-val-score { 
+    font-family: var(--font-mono); 
+    font-size: 2.2rem; /* 大きく見やすく */
+    font-weight: 900; 
+    color: #fff; 
+    line-height: 1; 
 }

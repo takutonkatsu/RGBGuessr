@@ -139,13 +139,11 @@
         </section>
 
         <section id="screen-result-daily" class="screen fade-in result-screen daily-result-bg">
-            <div class="game-header" style="margin-bottom:20px;">
-                <h2 class="game-title color-daily">Daily Color</h2>
-                <div class="daily-res-date" id="daily-res-date" style="font-size:1rem;">202X.XX.XX</div>
+            <div class="daily-res-header">
+                <span class="daily-res-label">DAILY CHALLENGE</span>
+                <span id="daily-res-date" class="daily-res-date">202X.XX.XX</span>
             </div>
-
             <div class="score-display"><span class="score-label">SCORE</span><h1 id="daily-score">0%</h1></div>
-            
             <div class="daily-compare-container">
                 <div class="daily-color-block">
                     <p class="compare-label">TARGET</p>
@@ -158,15 +156,11 @@
                     <span id="daily-your-text" class="daily-rgb-text">0, 0, 0</span>
                 </div>
             </div>
-            
             <div style="text-align:center; margin-bottom:30px; margin-top:20px; color:rgba(255,255,255,0.7); font-size:0.9rem;">
                 Next Color in: <span id="daily-next-timer" style="color:#fff; font-family:var(--font-mono); font-weight:bold;">--:--:--</span>
             </div>
-
             <div class="modal-buttons">
-                <button onclick="dailyGame.shareResult()" class="btn-share">
-                    <span class="share-icon">📤</span> SHARE RESULT
-                </button>
+                <button onclick="dailyGame.shareResult()" class="btn-share"><span class="share-icon">📤</span> SHARE RESULT</button>
                 <button onclick="app.backToMenu()" class="btn-text">BACK TO MENU</button>
             </div>
         </section>
@@ -174,9 +168,15 @@
         <section id="screen-rush" class="screen fade-in">
             <div class="game-header">
                 <h2 class="game-title color-rush">Rush</h2>
-                <div style="text-align:right;">
-                    <div id="rush-timer" class="rush-timer-big">60.00</div>
-                    <div style="font-size:0.8rem; color:#aaa;">SCORE: <span id="rush-current-score" style="color:#fff; font-weight:bold;">0</span></div>
+                <div class="rush-header-info">
+                    <div class="rush-info-item">
+                        <span class="rush-label">TIME</span>
+                        <div id="rush-timer" class="rush-val-time">60.00</div>
+                    </div>
+                    <div class="rush-info-item">
+                        <span class="rush-label">SCORE</span>
+                        <div id="rush-current-score" class="rush-val-score">0</div>
+                    </div>
                 </div>
             </div>
             <div id="rush-combo-display" class="rush-combo hidden">0 COMBO</div>
@@ -195,16 +195,16 @@
 
         <section id="screen-result-rush" class="screen fade-in result-screen">
             <div class="game-header"><h2 class="game-title color-rush">Rush</h2></div>
-            
             <div id="rush-new-record" class="new-record hidden">NEW HIGH SCORE!</div>
-            <div class="score-display"><span class="score-label">TOTAL SCORE</span><h1 id="rush-final-score">0</h1></div>
+            <div class="score-display"><span class="score-label">SCORE</span><h1 id="rush-final-score">0</h1></div>
+            
             <div class="stats-row">
-                <div class="stat-box"><span class="stat-label">Max Combo</span><span id="rush-max-combo" class="stat-value highlight">0</span></div>
                 <div class="stat-box"><span class="stat-label">Correct</span><span id="rush-count" class="stat-value">0</span></div>
-                <div class="stat-box"><span class="stat-label">Best Score</span><span id="rush-best" class="stat-value">--</span></div>
+                <div class="stat-box"><span class="stat-label">Max Combo</span><span id="rush-max-combo" class="stat-value">0</span></div>
+                <div class="stat-box"><span class="stat-label">Best Score</span><span id="rush-best" class="stat-value highlight">--</span></div>
             </div>
             <div class="modal-buttons">
-                <button onclick="rushGame.init()" class="btn-primary">RETRY</button>
+                <button onclick="rushGame.init()" class="btn-primary"><span class="btn-icon">↻</span> RETRY</button>
                 <button onclick="rushGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
             </div>
         </section>
@@ -222,7 +222,6 @@
 
         <section id="screen-result-origin" class="screen fade-in result-screen">
             <div class="game-header"><h2 class="game-title color-origin">Origin</h2></div>
-            
             <div id="origin-new-record" class="new-record hidden">NEW RECORD!</div>
             <div class="score-display"><span class="score-label">SCORE</span><h1 id="origin-score">0%</h1></div>
             <div class="compare-row">
@@ -234,11 +233,8 @@
                 <div class="stat-box"><span class="stat-label">AO5 BEST</span><span id="origin-ao5" class="stat-value">--</span></div>
             </div>
             <div class="modal-buttons">
-                <button onclick="originGame.nextColor()" class="btn-primary">NEXT COLOR</button>
-                <button onclick="originGame.shareResult()" class="btn-share">
-                    <span class="share-icon">📤</span> SHARE RESULT
-                </button>
-                <button onclick="app.backToMenu()" class="btn-text">Menu</button>
+                <button onclick="originGame.nextColor()" class="btn-primary"><span class="btn-icon">▶</span> NEXT COLOR</button>
+                <button onclick="originGame.shareResult()" class="btn-share"><span class="share-icon">📤</span> SHARE RESULT</button>
                 <button onclick="originGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
             </div>
             <div id="origin-history" class="history-log"></div>
@@ -264,7 +260,7 @@
         <section id="screen-result-survival" class="screen fade-in result-screen">
             <div class="game-header"><h2 class="game-title color-survival">Survival</h2></div>
             
-            <div id="survival-new-record" class="new-record hidden">MAX STAGE UPDATED!</div>
+            <div id="survival-new-record" class="new-record hidden">NEW RECORD!</div>
             <h1 id="survival-score-text" style="font-size:3rem; margin:10px 0;">Clear!</h1>
             <div class="result-score-block">
                 <div class="score-item"><span class="label">SCORE</span><span id="survival-result-score" class="val">0%</span></div>
@@ -282,9 +278,8 @@
                 </div>
             </div>
             <div class="modal-buttons">
-                <button id="survival-next-btn" class="btn-primary">NEXT STAGE</button>
-                <button onclick="app.backToMenu()" class="btn-text">Menu</button>
-                <button onclick="survivalGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset</button>
+                <button id="survival-next-btn" class="btn-primary"><span class="btn-icon">▶</span> NEXT STAGE</button>
+                <button onclick="survivalGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
             </div>
             <div id="survival-history" class="history-log"></div>
         </section>
@@ -331,9 +326,10 @@
         </section>
 
         <section id="screen-versus-lobby" class="screen fade-in" style="text-align:center;">
-            <div class="game-header"><h2 class="game-title color-versus">Lobby</h2></div>
+            <div class="game-header"><h2 class="game-title color-versus">Versus</h2></div>
             <p>Share this Room ID</p>
             <div id="versus-room-id-display" class="room-id-display" style="color:var(--primary-multi);">----</div>
+            <div class="loading-spinner"></div>
             <div id="versus-lobby-goal" style="color:#fff; font-family:var(--font-mono); margin-bottom:15px; font-weight:bold;">GOAL: ---</div>
             
             <div style="margin-top:20px; font-size:1rem; color:#ddd; line-height:1.6;">
@@ -382,7 +378,7 @@
             </div>
 
             <div class="modal-buttons">
-                <button id="versus-continue-btn" onclick="versusGame.voteContinue()" class="btn-primary">CONTINUE</button>
+                <button id="versus-continue-btn" onclick="versusGame.voteContinue()" class="btn-primary"><span class="btn-icon">▶</span> CONTINUE</button>
                 <button onclick="versusGame.confirmExit()" class="btn-text">Exit Room</button>
             </div>
             <p id="versus-continue-status" style="color:#888; font-size:0.8rem; margin-top:-10px; min-height:1.2em;"></p>
