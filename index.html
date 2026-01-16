@@ -176,12 +176,12 @@
                 <h2 class="game-title color-rush">Rush</h2>
                 <div class="rush-header-info">
                     <div class="rush-info-item">
-                        <span class="rush-label">SCORE</span>
-                        <div id="rush-current-score" class="rush-val-score">0</div>
-                    </div>
-                    <div class="rush-info-item">
                         <span class="rush-label">TIME</span>
                         <div id="rush-timer" class="rush-val-time">60.00</div>
+                    </div>
+                    <div class="rush-info-item">
+                        <span class="rush-label">SCORE</span>
+                        <div id="rush-current-score" class="rush-val-score">0</div>
                     </div>
                 </div>
             </div>
@@ -201,10 +201,8 @@
 
         <section id="screen-result-rush" class="screen fade-in result-screen">
             <div class="game-header"><h2 class="game-title color-rush">Rush</h2></div>
-            
             <div id="rush-new-record" class="new-record hidden">NEW HIGH SCORE!</div>
             <div class="score-display"><span class="score-label">SCORE</span><h1 id="rush-final-score">0</h1></div>
-            
             <div class="stats-row">
                 <div class="stat-box"><span class="stat-label">Correct</span><span id="rush-count" class="stat-value">0</span></div>
                 <div class="stat-box"><span class="stat-label">Max Combo</span><span id="rush-max-combo" class="stat-value">0</span></div>
@@ -229,7 +227,6 @@
 
         <section id="screen-result-origin" class="screen fade-in result-screen">
             <div class="game-header"><h2 class="game-title color-origin">Origin</h2></div>
-            
             <div id="origin-new-record" class="new-record hidden">NEW RECORD!</div>
             <div class="score-display"><span class="score-label">SCORE</span><h1 id="origin-score">0%</h1></div>
             <div class="compare-row">
@@ -399,7 +396,7 @@
         <div class="copyright" onclick="app.triggerSecret()">&copy; 2023-2025 Takutonkatsu</div>
     </footer>
     
-    <canvas id="share-canvas" width="600" height="400" style="display:none;"></canvas>
+    <canvas id="share-canvas" width="600" height="600" style="display:none;"></canvas>
 
     <div id="custom-alert-modal" class="custom-modal-overlay hidden">
         <div class="custom-modal-box">
