@@ -1,3 +1,4 @@
+// ▼ Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyAWQexxxlNCVlG3s-OMHMzDKI-XFL2X-wE",
   authDomain: "rgb-guessr-battle.firebaseapp.com",
@@ -55,11 +56,16 @@ const app = {
             }
         }
         window.scrollTo(0, 0);
+
+        // Save state for reload
+        if (['origin', 'rush', 'survival', 'versus', 'daily', 'anotherworld', 'menu'].includes(screenId)) {
+            localStorage.setItem('current_screen', screenId);
+        }
     },
 
     backToMenu: function() {
-        if(multiGame.roomId) {
-            multiGame.confirmExit();
+        if(versusGame.roomId) {
+            versusGame.confirmExit();
         } else {
             if (dailyGame.timerInterval) clearInterval(dailyGame.timerInterval);
             this.showScreen('menu');
@@ -67,19 +73,18 @@ const app = {
     },
 
     startGame: function(mode) {
-        if(mode === 'multi') {
-            this.showScreen('multi-menu');
+        if(mode === 'versus') {
+            this.showScreen('versus-menu');
             const savedName = localStorage.getItem("friend_name");
-            if(savedName) document.getElementById('multi-name-input').value = savedName;
+            if(savedName) document.getElementById('versus-name-input').value = savedName;
             return;
         }
         
         this.showScreen(mode);
         
-        // app.startGame の分岐修正
-        if(mode === 'rush') rushGame.init();  // matchingの代わりに
-        if(mode === 'original') originalGame.init();
-        if(mode === 'challenge') challengeGame.init();
+        if(mode === 'origin') originGame.init();
+        if(mode === 'survival') survivalGame.init();
+        if(mode === 'rush') rushGame.init();
         if(mode === 'daily') dailyGame.init(); 
         if(mode === 'anotherworld') anotherGame.init();
     },
@@ -154,9 +159,6 @@ const utils = {
     }
 };
 
-
-// ... (前略)
-
 const menuLogic = {
     init: function() {
         const today = new Date();
@@ -164,20 +166,19 @@ const menuLogic = {
         const savedDate = localStorage.getItem("date_key");
         if(savedDate != ymd) { localStorage.setItem("date_key", ymd); }
 
-        this.showDualRecord("2my_1record", "2my_ao5record", "menu-matching-record");
         this.showDualRecord("my_1record", "my_ao5record", "menu-original-record");
+        this.showDualRecord("rush_best", null, "menu-rush-record");
         
         const stageRec = localStorage.getItem("4stage_record");
         const stageElem = document.getElementById("menu-challenge-record");
         if(stageElem) { stageElem.innerHTML = stageRec ? `Max Stage: <span>${stageRec}</span>` : "Start: Stage 1"; }
 
-        // ★修正: Ao5スコアに応じたロゴの色変化
         const ao5Rec = Number(localStorage.getItem("my_ao5record")) || 0;
         const logoEl = document.getElementById("app-logo");
-        const iconHtml = `<img src="Retina_icon.png" alt="icon" class="logo-icon">`;
+        const iconHtml = `<img src="Retina_icon.png" alt="icon" class="logo-icon" id="source-logo-icon">`;
         
         if(logoEl) {
-            let rankClass = ""; // デフォルト
+            let rankClass = ""; 
             if (ao5Rec >= 99.90) rankClass = "logo-rank-rainbow";
             else if (ao5Rec >= 99.50) rankClass = "logo-rank-gold";
             else if (ao5Rec >= 99.00) rankClass = "logo-rank-cyan";
@@ -185,7 +186,6 @@ const menuLogic = {
             else if (ao5Rec >= 95.00) rankClass = "logo-rank-red";
             else if (ao5Rec >= 90.00) rankClass = "logo-rank-blue";
             
-            // クラスを付与してテキストを表示
             logoEl.innerHTML = `${iconHtml} <span class="logo-text ${rankClass}">RETINA</span>`;
         }
 
@@ -207,19 +207,15 @@ const menuLogic = {
             statusEl.innerText = "PLAY NOW ►";
             statusEl.className = "daily-status";
         }
-
-        // Rushのレコード更新呼び出し
-        if(typeof rushGame !== 'undefined') rushGame.updateMenuRecord();
     },
-    // ... (showDualRecordはそのまま)
     showDualRecord: function(singleKey, ao5Key, elemId) {
         const sRec = localStorage.getItem(singleKey);
-        const aRec = localStorage.getItem(ao5Key);
+        const aRec = ao5Key ? localStorage.getItem(ao5Key) : null;
         const el = document.getElementById(elemId);
         if(el) {
             if(!sRec && !aRec) { el.innerText = "NO RECORD"; } else {
                 let html = "";
-                if(sRec) html += `Best: <span>${sRec}%</span>`;
+                if(sRec) html += `Best: <span>${sRec}${ao5Key?"%":""}</span>`;
                 if(sRec && aRec) html += " / ";
                 if(aRec) html += `Ao5: <span>${aRec}%</span>`;
                 el.innerHTML = html;
@@ -228,191 +224,17 @@ const menuLogic = {
     }
 };
 
-
 // ▼ Game Modes
 
-// Rush Mode (Fix: Add isPlaying flag and clear interval properly)
-const rushGame = {
-    timerInterval: null, 
-    timeLeft: 60, 
-    score: 0, 
-    combo: 0, 
-    questionColor: {},
-    count: 0,
-    isPlaying: false, // ★追加: プレイ中フラグ
-
-    init: function() {
-        this.els = { R: document.getElementById('rush-R'), G: document.getElementById('rush-G'), B: document.getElementById('rush-B'), valR: document.getElementById('rush-val-R'), valG: document.getElementById('rush-val-G'), valB: document.getElementById('rush-val-B'), qColor: document.getElementById('rush-question-color'), myColor: document.getElementById('rush-input-color'), timer: document.getElementById('rush-timer'), combo: document.getElementById('rush-combo-display'), currentScore: document.getElementById('rush-current-score') };
-        const update = () => this.updateMyColor(); 
-        this.els.R.oninput = update; this.els.G.oninput = update; this.els.B.oninput = update;
-        document.getElementById('rush-guess-btn').onclick = () => this.guess();
-        
-        app.showScreen('rush');
-        this.resetGame();
-    },
-
-    resetGame: function() {
-        this.isPlaying = true; // ★追加
-        this.timeLeft = 60;
-        this.score = 0;
-        this.combo = 0;
-        this.count = 0;
-        this.nextColor();
-        this.updateUI();
-        
-        if(this.timerInterval) clearInterval(this.timerInterval);
-        this.timerInterval = setInterval(() => {
-            if (!this.isPlaying) return; // ★追加: プレイ中でなければ何もしない
-
-            this.timeLeft -= 0.01;
-            if (this.timeLeft <= 0) {
-                this.timeLeft = 0;
-                this.gameOver();
-            }
-            this.updateUI();
-        }, 10);
-    },
-
-    nextColor: function() {
-        this.questionColor = utils.randColor();
-        this.els.qColor.style.backgroundColor = this.questionColor.hex;
-        this.els.R.value = Math.floor(Math.random() * 256);
-        this.els.G.value = Math.floor(Math.random() * 256);
-        this.els.B.value = Math.floor(Math.random() * 256);
-        this.updateMyColor();
-    },
-
-    updateMyColor: function() {
-        const r = parseInt(this.els.R.value); const g = parseInt(this.els.G.value); const b = parseInt(this.els.B.value);
-        this.els.valR.innerText = r; this.els.valG.innerText = g; this.els.valB.innerText = b;
-        this.els.myColor.style.backgroundColor = utils.rgbToHex(r, g, b);
-    },
-
-    updateUI: function() {
-        this.els.timer.innerText = this.timeLeft.toFixed(2);
-        this.els.currentScore.innerText = Math.floor(this.score);
-        if (this.combo > 1) {
-            this.els.combo.classList.remove('hidden');
-            this.els.combo.innerText = `${this.combo} COMBO`;
-        } else {
-            this.els.combo.classList.add('hidden');
-        }
-    },
-
-    guess: function() {
-        if (!this.isPlaying) return; // ★追加
-
-        const r = parseInt(this.els.R.value); const g = parseInt(this.els.G.value); const b = parseInt(this.els.B.value);
-        const acc = utils.calcScoreValue(this.questionColor, {r, g, b}); 
-        
-        let timeDelta = 0;
-        let isBad = false;
-
-        if (acc < 90) {
-            timeDelta = -5;
-            this.combo = 0;
-            isBad = true;
-        } else {
-            if (acc >= 99) timeDelta = 5;
-            else if (acc >= 98) timeDelta = 4;
-            else if (acc >= 95) timeDelta = 2;
-            else timeDelta = 0; 
-            
-            this.combo++;
-            this.score += (acc * 10) + (this.combo * 50);
-            this.count++;
-        }
-
-        this.timeLeft += timeDelta;
-        if (this.timeLeft < 0) this.timeLeft = 0; 
-
-        const accStr = acc.toFixed(2) + "%";
-        this.showEffect(timeDelta, isBad, accStr);
-        
-        if (this.timeLeft > 0) {
-            this.nextColor();
-        } else {
-            this.gameOver();
-        }
-    },
-
-    showEffect: function(delta, isBad, accStr) {
-        const container = document.getElementById('rush-effect-container');
-        const el = document.createElement('div');
-        el.className = 'time-popup';
-        
-        let timeText = "";
-        let colorClass = "";
-        
-        if (isBad) {
-            timeText = "-5s";
-            colorClass = "bad"; 
-        } else if (delta > 0) {
-            timeText = `+${delta}s`;
-            colorClass = "good"; 
-        } else {
-            timeText = "SAFE";
-            colorClass = "safe"; 
-        }
-
-        el.innerHTML = `<span class="popup-acc">${accStr}</span><br><span class="popup-time ${colorClass}">${timeText}</span>`;
-        
-        const rndX = (Math.random() - 0.5) * 60;
-        const rndY = (Math.random() - 0.5) * 60;
-        el.style.transform = `translate(${rndX}px, ${rndY}px)`;
-
-        container.appendChild(el);
-        setTimeout(() => el.remove(), 800);
-    },
-
-    gameOver: function() {
-        this.isPlaying = false; // ★追加
-        clearInterval(this.timerInterval);
-        app.showScreen('result-rush');
-        
-        const finalScore = Math.floor(this.score);
-        document.getElementById('rush-final-score').innerText = finalScore;
-        document.getElementById('rush-max-combo').innerText = this.combo; 
-        document.getElementById('rush-count').innerText = this.count;
-
-        const currentBest = Number(localStorage.getItem('rush_best')) || 0;
-        const newRecordEl = document.getElementById('rush-new-record');
-        if (finalScore > currentBest) {
-            localStorage.setItem('rush_best', finalScore);
-            newRecordEl.classList.remove('hidden');
-        } else {
-            newRecordEl.classList.add('hidden');
-        }
-        document.getElementById('rush-best').innerText = localStorage.getItem('rush_best') || 0;
-        this.updateMenuRecord();
-    },
-
-    updateMenuRecord: function() {
-        const rec = localStorage.getItem('rush_best');
-        const el = document.getElementById('menu-rush-record');
-        if (el && rec) {
-            el.innerHTML = `Best: <span>${rec}</span>`;
-        }
-    },
-    
-    resetData: function() {
-        app.confirm("Reset Rush Records?", (y) => {
-            if(y) {
-                localStorage.removeItem('rush_best');
-                location.reload();
-            }
-        });
-    }
-};
-
-const originalGame = {
+// Origin Mode (formerly Original)
+const originGame = {
     questionColor: {},
     init: function() {
-        this.els = { R: document.getElementById('original-R'), G: document.getElementById('original-G'), B: document.getElementById('original-B'), valR: document.getElementById('original-val-R'), valG: document.getElementById('original-val-G'), valB: document.getElementById('original-val-B'), qColor: document.getElementById('original-question-color') };
+        this.els = { R: document.getElementById('origin-R'), G: document.getElementById('origin-G'), B: document.getElementById('origin-B'), valR: document.getElementById('origin-val-R'), valG: document.getElementById('origin-val-G'), valB: document.getElementById('origin-val-B'), qColor: document.getElementById('origin-question-color') };
         const update = () => { this.els.valR.innerText = this.els.R.value; this.els.valG.innerText = this.els.G.value; this.els.valB.innerText = this.els.B.value; };
         this.els.R.oninput = update; this.els.G.oninput = update; this.els.B.oninput = update;
-        document.getElementById('original-guess-btn').onclick = () => this.guess();
-        document.getElementById('original-new-record').classList.add('hidden');
+        document.getElementById('origin-guess-btn').onclick = () => this.guess();
+        document.getElementById('origin-new-record').classList.add('hidden');
         this.retry(); this.updateHistory();
     },
     retry: function() {
@@ -420,9 +242,9 @@ const originalGame = {
         if(savedHex) { const r = Number(localStorage.getItem("RGB_Temporary_R")); const g = Number(localStorage.getItem("RGB_Temporary_G")); const b = Number(localStorage.getItem("RGB_Temporary_B")); this.questionColor = { r, g, b, hex: savedHex }; }
         else { this.questionColor = utils.randColor(); localStorage.setItem("RGB_Temporary_Hex", this.questionColor.hex); localStorage.setItem("RGB_Temporary_R", this.questionColor.r); localStorage.setItem("RGB_Temporary_G", this.questionColor.g); localStorage.setItem("RGB_Temporary_B", this.questionColor.b); }
         this.els.qColor.style.backgroundColor = this.questionColor.hex; this.els.R.value = 128; this.els.G.value = 128; this.els.B.value = 128; this.els.R.oninput();
-        document.getElementById('original-new-record').classList.add('hidden');
+        document.getElementById('origin-new-record').classList.add('hidden');
     },
-    nextColor: function() { localStorage.removeItem("RGB_Temporary_Hex"); this.retry(); app.showScreen('original'); },
+    nextColor: function() { localStorage.removeItem("RGB_Temporary_Hex"); this.retry(); app.showScreen('origin'); },
     guess: function() {
         const r = parseInt(this.els.R.value); const g = parseInt(this.els.G.value); const b = parseInt(this.els.B.value); const q = this.questionColor;
         const score = utils.calcScore(q, {r, g, b});
@@ -443,17 +265,16 @@ const originalGame = {
             const ao5pb = Number(localStorage.getItem("my_ao5record")) || 0; 
             if(Number(ao5) > ao5pb) { localStorage.setItem("my_ao5record", ao5); isNewRecord = true; }
         }
-        const recordEl = document.getElementById('original-new-record');
+        const recordEl = document.getElementById('origin-new-record');
         if(isNewRecord) recordEl.classList.remove('hidden'); else recordEl.classList.add('hidden');
         localStorage.setItem("index", val + 1); localStorage.removeItem("RGB_Temporary_Hex");
         this.showResult(score, q, {r,g,b}); this.updateHistory();
     },
     showResult: function(score, q, input) {
-        app.showScreen('result-original'); 
-        document.getElementById('original-score').innerText = score + "%";
-        document.getElementById('original-ans-color').style.backgroundColor = q.hex; document.getElementById('original-ans-text').innerText = `${q.r},${q.g},${q.b}`;
-        document.getElementById('original-your-color').style.backgroundColor = utils.rgbToHex(input.r,input.g,input.b); document.getElementById('original-your-text').innerText = `${input.r},${input.g},${input.b}`;
-        document.querySelector('#screen-result-original .btn-primary').onclick = () => this.nextColor();
+        app.showScreen('result-origin'); 
+        document.getElementById('origin-score').innerText = score + "%";
+        document.getElementById('origin-ans-color').style.backgroundColor = q.hex; document.getElementById('origin-ans-text').innerText = `${q.r},${q.g},${q.b}`;
+        document.getElementById('origin-your-color').style.backgroundColor = utils.rgbToHex(input.r,input.g,input.b); document.getElementById('origin-your-text').innerText = `${input.r},${input.g},${input.b}`;
     },
     updateHistory: function() {
         const val = Number(localStorage.getItem("index")) || 1; const pb = Number(localStorage.getItem("my_1record")) || 0; const bestAo5 = Number(localStorage.getItem("my_ao5record")) || 0;
@@ -468,11 +289,11 @@ const originalGame = {
             html += `<div class="${rowClass}">${indexHtml}<div class="history-colors"><div class="color-row"><span class="label-box" style="color:#aaa">TARGET</span><span class="chip-xs" style="background:${ansHex}"></span><span>${ansTxt}</span></div><div class="color-row"><span class="label-box" style="color:#fff">YOU</span><span class="chip-xs" style="background:${myHex}"></span><span>${myTxt}</span></div></div><div class="history-right"><div class="history-score-val">${sc}%</div>${ao5Html}</div></div>`;
         }
         document.getElementById('original-history').innerHTML = html;
-        document.getElementById('original-pb').innerText = (pb ? pb.toFixed(2) : "--") + "%"; 
-        document.getElementById('original-ao5').innerText = (bestAo5 ? bestAo5.toFixed(2) : "--") + "%";
+        document.getElementById('origin-pb').innerText = (pb ? pb.toFixed(2) : "--") + "%"; 
+        document.getElementById('origin-ao5').innerText = (bestAo5 ? bestAo5.toFixed(2) : "--") + "%";
     },
     resetData: function() { 
-        app.confirm("Originalモードの記録を削除しますか？", (y)=>{ 
+        app.confirm("Originモードの記録を削除しますか？", (y)=>{ 
             if(y){ 
                 const keys = Object.keys(localStorage);
                 keys.forEach(k => { if (k === "index" || k.startsWith("score") || k.startsWith("answer_") || k.startsWith("input_") || k.startsWith("Ao5")) { localStorage.removeItem(k); } });
@@ -483,35 +304,100 @@ const originalGame = {
     }
 };
 
-// ... (前略: Firebase Config, app, utils, menuLogic, rushGame, originalGame は変更なし) ...
+// Rush Mode
+const rushGame = {
+    timerInterval: null, timeLeft: 60, score: 0, combo: 0, questionColor: {}, count: 0, isPlaying: false,
+    init: function() {
+        this.els = { R: document.getElementById('rush-R'), G: document.getElementById('rush-G'), B: document.getElementById('rush-B'), valR: document.getElementById('rush-val-R'), valG: document.getElementById('rush-val-G'), valB: document.getElementById('rush-val-B'), qColor: document.getElementById('rush-question-color'), myColor: document.getElementById('rush-input-color'), timer: document.getElementById('rush-timer'), combo: document.getElementById('rush-combo-display'), currentScore: document.getElementById('rush-current-score') };
+        const update = () => this.updateMyColor(); 
+        this.els.R.oninput = update; this.els.G.oninput = update; this.els.B.oninput = update;
+        document.getElementById('rush-guess-btn').onclick = () => this.guess();
+        app.showScreen('rush');
+        this.resetGame();
+    },
+    resetGame: function() {
+        this.isPlaying = true; this.timeLeft = 60; this.score = 0; this.combo = 0; this.count = 0;
+        this.nextColor(); this.updateUI();
+        if(this.timerInterval) clearInterval(this.timerInterval);
+        this.timerInterval = setInterval(() => {
+            if (!this.isPlaying) return;
+            this.timeLeft -= 0.01;
+            if (this.timeLeft <= 0) { this.timeLeft = 0; this.gameOver(); }
+            this.updateUI();
+        }, 10);
+    },
+    nextColor: function() {
+        this.questionColor = utils.randColor(); this.els.qColor.style.backgroundColor = this.questionColor.hex;
+        this.els.R.value = Math.floor(Math.random() * 256); this.els.G.value = Math.floor(Math.random() * 256); this.els.B.value = Math.floor(Math.random() * 256);
+        this.updateMyColor();
+    },
+    updateMyColor: function() {
+        const r = parseInt(this.els.R.value); const g = parseInt(this.els.G.value); const b = parseInt(this.els.B.value);
+        this.els.valR.innerText = r; this.els.valG.innerText = g; this.els.valB.innerText = b;
+        this.els.myColor.style.backgroundColor = utils.rgbToHex(r, g, b);
+    },
+    updateUI: function() {
+        this.els.timer.innerText = this.timeLeft.toFixed(2); this.els.currentScore.innerText = Math.floor(this.score);
+        if (this.combo > 1) { this.els.combo.classList.remove('hidden'); this.els.combo.innerText = `${this.combo} COMBO`; } else { this.els.combo.classList.add('hidden'); }
+    },
+    guess: function() {
+        if (!this.isPlaying) return;
+        const r = parseInt(this.els.R.value); const g = parseInt(this.els.G.value); const b = parseInt(this.els.B.value);
+        const acc = utils.calcScoreValue(this.questionColor, {r, g, b}); 
+        let timeDelta = 0; let isBad = false;
+        if (acc < 90) { timeDelta = -5; this.combo = 0; isBad = true; } else {
+            if (acc >= 99) timeDelta = 5; else if (acc >= 98) timeDelta = 4; else if (acc >= 95) timeDelta = 2; else timeDelta = 0; 
+            this.combo++; this.score += (acc * 10) + (this.combo * 50); this.count++;
+        }
+        this.timeLeft += timeDelta; if (this.timeLeft < 0) this.timeLeft = 0; 
+        this.showEffect(timeDelta, isBad, acc.toFixed(2)+"%");
+        if (this.timeLeft > 0) { this.nextColor(); } else { this.gameOver(); }
+    },
+    showEffect: function(delta, isBad, accStr) {
+        const container = document.getElementById('rush-effect-container');
+        const el = document.createElement('div'); el.className = 'time-popup';
+        let timeText = isBad ? "-5s" : (delta > 0 ? `+${delta}s` : "SAFE");
+        let colorClass = isBad ? "bad" : (delta > 0 ? "good" : "safe");
+        el.innerHTML = `<span class="popup-acc">${accStr}</span><br><span class="popup-time ${colorClass}">${timeText}</span>`;
+        const rndX = (Math.random() - 0.5) * 60; const rndY = (Math.random() - 0.5) * 60;
+        el.style.transform = `translate(${rndX}px, ${rndY}px)`;
+        container.appendChild(el); setTimeout(() => el.remove(), 800);
+    },
+    gameOver: function() {
+        this.isPlaying = false; clearInterval(this.timerInterval);
+        app.showScreen('result-rush');
+        const finalScore = Math.floor(this.score);
+        document.getElementById('rush-final-score').innerText = finalScore;
+        document.getElementById('rush-max-combo').innerText = this.combo; document.getElementById('rush-count').innerText = this.count;
+        const currentBest = Number(localStorage.getItem('rush_best')) || 0;
+        const newRecordEl = document.getElementById('rush-new-record');
+        if (finalScore > currentBest) { localStorage.setItem('rush_best', finalScore); newRecordEl.classList.remove('hidden'); } else { newRecordEl.classList.add('hidden'); }
+        document.getElementById('rush-best').innerText = localStorage.getItem('rush_best') || 0;
+    },
+    resetData: function() { app.confirm("Reset Rush Records?", (y) => { if(y) { localStorage.removeItem('rush_best'); location.reload(); } }); }
+};
 
-const challengeGame = {
-    // ★修正: 絶妙な難易度カーブに調整 (全25ステージ)
-    aimScores: [
-        "50.00", "60.00", "70.00", "75.00", "80.00", 
-        "85.00", "88.00", "90.00", "91.00", "92.00", 
-        "93.00", "94.00", "95.00", "95.50", "96.00", 
-        "96.50", "97.00", "97.50", "98.00", "98.50", 
-        "99.00", "99.30", "99.60", "99.90", "100.00"
-    ],
+// Survival Mode (formerly Challenge)
+const survivalGame = {
+    aimScores: ["50.00", "60.00", "70.00", "75.00", "80.00", "85.00", "88.00", "90.00", "91.00", "92.00", "93.00", "94.00", "95.00", "95.50", "96.00", "96.50", "97.00", "97.50", "98.00", "98.50", "99.00", "99.30", "99.60", "99.90", "100.00"],
     currentStage: 1, questionColor: {},
     init: function() {
-        this.els = { R: document.getElementById('challenge-R'), G: document.getElementById('challenge-G'), B: document.getElementById('challenge-B'), valR: document.getElementById('challenge-val-R'), valG: document.getElementById('challenge-val-G'), valB: document.getElementById('challenge-val-B'), sample: document.getElementById('challenge-sample'), nextBtn: document.getElementById('challenge-next-btn') };
+        this.els = { R: document.getElementById('survival-R'), G: document.getElementById('survival-G'), B: document.getElementById('survival-B'), valR: document.getElementById('survival-val-R'), valG: document.getElementById('survival-val-G'), valB: document.getElementById('survival-val-B'), sample: document.getElementById('survival-sample'), nextBtn: document.getElementById('survival-next-btn') };
         const update = () => { this.els.valR.innerText = this.els.R.value; this.els.valG.innerText = this.els.G.value; this.els.valB.innerText = this.els.B.value; };
         this.els.R.oninput = update; this.els.G.oninput = update; this.els.B.oninput = update;
-        document.getElementById('challenge-guess-btn').onclick = () => this.guess();
+        document.getElementById('survival-guess-btn').onclick = () => this.guess();
         const savedStage = localStorage.getItem("4stage_number"); this.currentStage = savedStage ? Number(savedStage) : 1;
-        document.getElementById('challenge-new-record').classList.add('hidden');
+        document.getElementById('survival-new-record').classList.add('hidden');
         this.setupStage(); this.updateHistory();
     },
     setupStage: function() {
-        const stageStr = this.currentStage.toString().padStart(2, '0'); document.getElementById('challenge-stage-num').innerText = stageStr; 
-        document.getElementById('challenge-aim-score').innerText = this.aimScores[this.currentStage - 1] + "%";
+        const stageStr = this.currentStage.toString().padStart(2, '0'); document.getElementById('survival-stage-num').innerText = stageStr; 
+        document.getElementById('survival-aim-score').innerText = this.aimScores[this.currentStage - 1] + "%";
         const savedHex = localStorage.getItem("4RGB_Temporary_Hex");
         if(savedHex) { const r = Number(localStorage.getItem("4RGB_Temporary_R")); const g = Number(localStorage.getItem("4RGB_Temporary_G")); const b = Number(localStorage.getItem("4RGB_Temporary_B")); this.questionColor = { r,g,b, hex: savedHex }; }
         else { this.questionColor = utils.randColor(); localStorage.setItem("4RGB_Temporary_Hex", this.questionColor.hex); localStorage.setItem("4RGB_Temporary_R", this.questionColor.r); localStorage.setItem("4RGB_Temporary_G", this.questionColor.g); localStorage.setItem("4RGB_Temporary_B", this.questionColor.b); }
         this.els.sample.style.backgroundColor = this.questionColor.hex; this.els.R.value = 128; this.els.G.value = 128; this.els.B.value = 128; this.els.R.oninput();
-        document.getElementById('challenge-new-record').classList.add('hidden');
+        document.getElementById('survival-new-record').classList.add('hidden');
     },
     guess: function() {
         const r = parseInt(this.els.R.value); const g = parseInt(this.els.G.value); const b = parseInt(this.els.B.value); const q = this.questionColor;
@@ -519,18 +405,16 @@ const challengeGame = {
         const target = this.aimScores[this.currentStage - 1]; 
         const isClear = Number(score) >= Number(target);
         
-        app.showScreen('result-challenge');
-        const scoreText = document.getElementById('challenge-score-text'); scoreText.innerText = isClear ? "Clear!" : "FAILED"; scoreText.style.color = isClear ? "var(--accent-green)" : "var(--accent-red)";
-        
-        document.getElementById('challenge-result-score').innerText = score + "%"; 
-        document.getElementById('challenge-result-goal').innerText = target + "%";
-        document.getElementById('challenge-ans-color').style.backgroundColor = q.hex; document.getElementById('challenge-ans-text').innerText = `${q.r},${q.g},${q.b}`;
-        document.getElementById('challenge-your-color').style.backgroundColor = utils.rgbToHex(r,g,b); document.getElementById('challenge-your-text').innerText = `${r},${g},${b}`;
+        app.showScreen('result-survival');
+        const scoreText = document.getElementById('survival-score-text'); scoreText.innerText = isClear ? "Clear!" : "FAILED"; scoreText.style.color = isClear ? "var(--accent-green)" : "var(--accent-red)";
+        document.getElementById('survival-result-score').innerText = score + "%"; document.getElementById('survival-result-goal').innerText = target + "%";
+        document.getElementById('survival-ans-color').style.backgroundColor = q.hex; document.getElementById('survival-ans-text').innerText = `${q.r},${q.g},${q.b}`;
+        document.getElementById('survival-your-color').style.backgroundColor = utils.rgbToHex(r,g,b); document.getElementById('survival-your-text').innerText = `${r},${g},${b}`;
         localStorage.setItem("4answer_rgb16_"+this.currentStage, q.hex); localStorage.setItem("4input_rgb16_"+this.currentStage, utils.rgbToHex(r,g,b));
         localStorage.setItem("4answer_rgb_"+this.currentStage, `(${q.r},${q.g},${q.b})`); localStorage.setItem("4input_rgb_"+this.currentStage, `(${r},${g},${b})`);
         
         const maxStage = Number(localStorage.getItem("4stage_record")) || 0;
-        const recordEl = document.getElementById('challenge-new-record');
+        const recordEl = document.getElementById('survival-new-record');
         if(isClear && this.currentStage > maxStage) { recordEl.classList.remove('hidden'); } else { recordEl.classList.add('hidden'); }
 
         if(isClear) {
@@ -543,13 +427,13 @@ const challengeGame = {
         }
         this.updateHistory();
     },
-    next: function() { if(this.currentStage > 25) { app.alert("ALL CLEAR! CONGRATULATIONS!", ()=>this.resetData()); return; } this.setupStage(); app.showScreen('challenge'); },
+    next: function() { if(this.currentStage > 25) { app.alert("ALL CLEAR! CONGRATULATIONS!", ()=>this.resetData()); return; } this.setupStage(); app.showScreen('survival'); },
     quickRestart: function() {
         for(let i=1; i<=26; i++) { localStorage.removeItem("4stage_number"+i); localStorage.removeItem("4answer_rgb16_"+i); localStorage.removeItem("4input_rgb16_"+i); localStorage.removeItem("4answer_rgb_"+i); localStorage.removeItem("4input_rgb_"+i); }
-        localStorage.setItem("4stage_number", 1); localStorage.removeItem("4RGB_Temporary_Hex"); this.currentStage = 1; this.setupStage(); this.updateHistory(); app.showScreen('challenge');
+        localStorage.setItem("4stage_number", 1); localStorage.removeItem("4RGB_Temporary_Hex"); this.currentStage = 1; this.setupStage(); this.updateHistory(); app.showScreen('survival');
     },
     updateHistory: function() {
-        const pb = localStorage.getItem("4stage_record"); document.getElementById('challenge-pb').innerText = pb ? `${pb}` : "1";
+        const pb = localStorage.getItem("4stage_record"); document.getElementById('survival-pb').innerText = pb ? `${pb}` : "1";
         let html = "";
         for(let i = this.currentStage - 1; i >= 1; i--) {
             const sc = localStorage.getItem("4stage_number"+i); const goal = this.aimScores[i-1];
@@ -560,13 +444,12 @@ const challengeGame = {
                 html += `<div class="history-item"><div class="history-index" style="width:auto; min-width:30px;"><span class="stage-badge-history">${stNum}</span></div><div class="history-colors"><div class="color-row"><span class="label-box" style="color:#aaa">TARGET</span><span class="chip-xs" style="background:${ansHex}"></span><span>${ansTxt}</span></div><div class="color-row"><span class="label-box" style="color:#fff">YOU</span><span class="chip-xs" style="background:${myHex}"></span><span>${myTxt}</span></div></div><div class="history-right"><div class="history-score-val">${sc}%</div><div class="history-goal-text">GOAL ${goal}%</div></div></div>`;
             }
         }
-        document.getElementById('challenge-history').innerHTML = html;
+        document.getElementById('survival-history').innerHTML = html;
     },
     resetData: function() { 
-        app.confirm("Challengeモードの記録をリセットしますか？", (y)=>{ if(y) { this.quickRestart(); localStorage.removeItem("4stage_record"); } }) 
+        app.confirm("Survivalモードの記録をリセットしますか？", (y)=>{ if(y) { this.quickRestart(); localStorage.removeItem("4stage_record"); } }) 
     }
 };
-
 
 const anotherGame = {
     init: function() {
@@ -615,12 +498,14 @@ const anotherGame = {
 
 // ▼ Daily Game Logic
 const dailyGame = {
-    targetColor: {},
-    dateStr: "",
-    timerInterval: null,
-    
+    targetColor: {}, dateStr: "", timerInterval: null, els:{},
     init: function() {
         if(this.timerInterval) clearInterval(this.timerInterval);
+        this.els = { R: document.getElementById('daily-R'), G: document.getElementById('daily-G'), B: document.getElementById('daily-B'), valR: document.getElementById('daily-val-R'), valG: document.getElementById('daily-val-G'), valB: document.getElementById('daily-val-B'), qColor: document.getElementById('daily-question-color') };
+        
+        // ★修正: リスナー登録を確実に行う
+        const guessBtn = document.getElementById('daily-guess-btn');
+        if(guessBtn) guessBtn.onclick = () => this.guess();
 
         this.dateStr = utils.getTodayString();
         this.targetColor = utils.generateDailyColor(this.dateStr);
@@ -632,10 +517,8 @@ const dailyGame = {
             return;
         }
 
-        this.els = { R: document.getElementById('daily-R'), G: document.getElementById('daily-G'), B: document.getElementById('daily-B'), valR: document.getElementById('daily-val-R'), valG: document.getElementById('daily-val-G'), valB: document.getElementById('daily-val-B'), qColor: document.getElementById('daily-question-color') };
         const update = () => { this.els.valR.innerText = this.els.R.value; this.els.valG.innerText = this.els.G.value; this.els.valB.innerText = this.els.B.value; };
         this.els.R.oninput = update; this.els.G.oninput = update; this.els.B.oninput = update;
-        document.getElementById('daily-guess-btn').onclick = () => this.guess();
         
         this.els.R.value = 128; this.els.G.value = 128; this.els.B.value = 128; 
         update();
@@ -653,18 +536,13 @@ const dailyGame = {
 
     showResult: function(score, target, inputHex) {
         if(this.timerInterval) clearInterval(this.timerInterval);
-
         app.showScreen('result-daily');
         document.getElementById('daily-res-date').innerText = utils.getFormattedDate();
-        
         document.getElementById('daily-score').innerText = score + "%";
-        
         document.getElementById('daily-ans-color').style.backgroundColor = target.hex;
         document.getElementById('daily-ans-text').innerText = `${target.r}, ${target.g}, ${target.b}`; 
-        
         document.getElementById('daily-your-color').style.backgroundColor = inputHex;
         document.getElementById('daily-your-text').innerText = utils.hexToRgbString(inputHex);
-
         this.startTimer();
     },
 
@@ -673,49 +551,80 @@ const dailyGame = {
             const now = new Date();
             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
             const diff = tomorrow - now;
-            
-            if (diff <= 0) {
-                document.getElementById('daily-next-timer').innerText = "Refresh to Play!";
-                return;
-            }
-            
+            if (diff <= 0) { document.getElementById('daily-next-timer').innerText = "Refresh to Play!"; return; }
             const h = Math.floor(diff / (1000 * 60 * 60));
             const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const s = Math.floor((diff % (1000 * 60)) / 1000);
             const timerEl = document.getElementById('daily-next-timer');
-            if(timerEl) {
-                timerEl.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            }
+            if(timerEl) timerEl.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         };
         updateTimer();
         this.timerInterval = setInterval(updateTimer, 1000);
+    },
+
+    shareResult: function() {
+        const canvas = document.getElementById('share-canvas');
+        const ctx = canvas.getContext('2d');
+        const dateText = utils.getFormattedDate();
+        const score = document.getElementById('daily-score').innerText;
+        const targetHex = this.targetColor.hex;
+        const savedInputHex = localStorage.getItem("daily_input_hex_" + this.dateStr) || "#000000";
+        
+        const grad = ctx.createLinearGradient(0, 0, 600, 400);
+        grad.addColorStop(0, '#1a1a2e'); grad.addColorStop(1, '#16213e');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, 600, 400);
+
+        const img = document.getElementById('source-logo-icon');
+        if (img && img.complete) { ctx.drawImage(img, 30, 30, 50, 50); }
+        ctx.font = '900 40px "Inter", sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText("RETINA", 100, 70);
+
+        ctx.font = '700 20px "JetBrains Mono", monospace'; ctx.fillStyle = '#ffd700'; ctx.fillText("DAILY CHALLENGE", 30, 130);
+        ctx.fillStyle = '#ffffff'; ctx.fillText(dateText, 30, 160);
+
+        ctx.font = '900 80px "Inter", sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = '#ffffff'; ctx.fillText(score, 570, 150);
+        ctx.font = '20px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.fillText("SCORE", 570, 80);
+
+        const drawCircle = (x, y, color, label) => {
+            ctx.font = 'bold 16px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 60);
+            ctx.beginPath(); ctx.arc(x, y, 50, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+            ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke();
+        };
+
+        drawCircle(200, 280, targetHex, "TARGET"); drawCircle(400, 280, savedInputHex, "YOU");
+
+        ctx.font = '14px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.textAlign = 'center'; ctx.fillText("rgb-guessr.web.app", 300, 380);
+
+        canvas.toBlob(blob => {
+            const file = new File([blob], "retina_daily.png", { type: "image/png" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({ files: [file], title: 'Retina Daily Result', text: `Daily Color Challenge ${dateText} | Score: ${score}` }).catch(console.error);
+            } else {
+                const link = document.createElement('a'); link.download = `retina_daily_${dateText}.png`; link.href = canvas.toDataURL(); link.click();
+            }
+        });
     }
 };
 
-// ▼ 6. UNIFIED MULTIPLAYER (2-4 Players) - FIXED
-const multiGame = {
+// ▼ 6. VERSUS MODE (Unified 2-4 Players)
+const versusGame = {
     roomId: null, role: null, roomRef: null,
-    myName: "Player", 
-    currentRound: 0, 
+    myName: "Player", currentRound: 0, 
 
     createRoom: function() {
-        const name = document.getElementById('multi-name-input').value.trim();
+        const name = document.getElementById('versus-name-input').value.trim();
         if(!name) return app.alert("Please enter your name.");
         
-        let maxWins = parseInt(document.getElementById('multi-goal-input').value);
+        let maxWins = parseInt(document.getElementById('versus-goal-input').value);
         if (isNaN(maxWins) || maxWins < 0) maxWins = 5;
 
         localStorage.setItem("friend_name", name);
         this.myName = name; this.role = 'p1'; 
         this.currentRound = 0;
         this.roomId = Math.floor(1000 + Math.random() * 9000).toString();
-        this.roomRef = db.ref('rooms_multi/' + this.roomId);
+        this.roomRef = db.ref('rooms_versus/' + this.roomId);
         
         this.roomRef.set({
-            state: 'waiting', 
-            question: utils.randColor(), 
-            round: 1,
-            maxWins: maxWins, 
+            state: 'waiting', question: utils.randColor(), round: 1, maxWins: maxWins, 
             players: {
                 p1: { name: this.myName, score: 0, status: 'waiting' },
                 p2: { name: '', score: 0, status: 'empty' },
@@ -726,32 +635,32 @@ const multiGame = {
         });
         this.roomRef.onDisconnect().remove();
         this.listenToRoom();
-        document.getElementById('multi-room-id-display').innerText = this.roomId;
-        app.showScreen('multi-lobby');
+        document.getElementById('versus-room-id-display').innerText = this.roomId;
+        app.showScreen('versus-lobby');
     },
 
     showJoinScreen: function() {
-        const name = document.getElementById('multi-name-input').value.trim();
+        const name = document.getElementById('versus-name-input').value.trim();
         if(!name) return app.alert("Please enter your name.");
         localStorage.setItem("friend_name", name); this.myName = name;
-        app.showScreen('multi-join');
+        app.showScreen('versus-join');
     },
 
     joinRoom: function() {
-        const inputEl = document.getElementById('multi-room-input');
+        const inputEl = document.getElementById('versus-room-input');
         const inputId = inputEl.value;
         if(!/^\d{4}$/.test(inputId)) return app.alert("Enter 4-digit ID");
         
-        const joinBtn = document.querySelector('#screen-multi-join .main-action-btn');
+        const joinBtn = document.querySelector('#screen-versus-join .main-action-btn');
         joinBtn.disabled = true;
 
         this.roomId = inputId;
-        this.roomRef = db.ref('rooms_multi/' + this.roomId);
+        this.roomRef = db.ref('rooms_versus/' + this.roomId);
         this.currentRound = 0;
 
-        app.showScreen('multi-lobby');
-        document.getElementById('multi-room-id-display').innerText = this.roomId;
-        document.getElementById('multi-status-text').innerText = "Connecting...";
+        app.showScreen('versus-lobby');
+        document.getElementById('versus-room-id-display').innerText = this.roomId;
+        document.getElementById('versus-status-text').innerText = "Connecting...";
         
         this.roomRef.once('value').then(snapshot => {
             if(snapshot.exists()) {
@@ -760,7 +669,7 @@ const multiGame = {
                 else if (data.players.p3.status === 'empty') this.role = 'p3';
                 else if (data.players.p4.status === 'empty') this.role = 'p4';
                 else {
-                    app.alert("Room is full (4/4)", () => { app.showScreen('multi-join'); });
+                    app.alert("Room is full (4/4)", () => { app.showScreen('versus-join'); });
                     joinBtn.disabled = false;
                     return;
                 }
@@ -769,11 +678,11 @@ const multiGame = {
                 this.listenToRoom();
                 joinBtn.disabled = false;
             } else { 
-                app.alert("Room not found", () => { app.showScreen('multi-join'); });
+                app.alert("Room not found", () => { app.showScreen('versus-join'); });
                 joinBtn.disabled = false;
             }
         }).catch(() => {
-            app.alert("Connection Error", () => { app.showScreen('multi-join'); });
+            app.alert("Connection Error", () => { app.showScreen('versus-join'); });
             joinBtn.disabled = false;
         });
     },
@@ -798,7 +707,7 @@ const multiGame = {
             }
 
             const goalText = (data.maxWins > 0) ? `First to ${data.maxWins} Wins` : "Endless Mode";
-            document.getElementById('multi-lobby-goal').innerText = `GOAL: ${goalText}`;
+            document.getElementById('versus-lobby-goal').innerText = `GOAL: ${goalText}`;
 
             ['p1', 'p2', 'p3', 'p4'].forEach((key, i) => {
                 const slotEl = document.getElementById(`lobby-slot-${i+1}`);
@@ -814,7 +723,7 @@ const multiGame = {
                 }
             });
 
-            document.getElementById('multi-status-text').innerText = `Waiting for players (${activeCount}/4)...`;
+            document.getElementById('versus-status-text').innerText = `Waiting for players (${activeCount}/4)...`;
 
             const startArea = document.getElementById('host-start-area');
             if (this.role === 'p1' && data.state === 'waiting') {
@@ -830,7 +739,7 @@ const multiGame = {
             }
 
             if (data.state === 'playing') {
-                if(!document.getElementById('screen-multi-battle').classList.contains('active')) {
+                if(!document.getElementById('screen-versus-battle').classList.contains('active')) {
                     this.startRound(data);
                 } else if (this.currentRound !== data.round) {
                     this.startRound(data);
@@ -841,7 +750,7 @@ const multiGame = {
                     if (data.players[k].status !== 'guessed') waitingCount++;
                 });
                 
-                const statusEl = document.getElementById('multi-opponent-status');
+                const statusEl = document.getElementById('versus-opponent-status');
                 if (waitingCount === 0) {
                     statusEl.innerText = "All players answered!";
                     statusEl.style.background = "rgba(255, 71, 87, 0.2)"; 
@@ -864,46 +773,46 @@ const multiGame = {
     },
 
     startRound: function(data) {
-        if (this.currentRound === data.round && document.getElementById('screen-multi-battle').classList.contains('active')) return;
+        if (this.currentRound === data.round && document.getElementById('screen-versus-battle').classList.contains('active')) return;
         
-        app.showScreen('multi-battle');
-        document.getElementById('multi-wait-msg').classList.add('hidden');
-        document.getElementById('multi-guess-btn').classList.remove('hidden');
+        app.showScreen('versus-battle');
+        document.getElementById('versus-wait-msg').classList.add('hidden');
+        document.getElementById('versus-guess-btn').classList.remove('hidden');
 
         const update = () => this.updateColor();
-        document.getElementById('multi-R').oninput = update;
-        document.getElementById('multi-G').oninput = update;
-        document.getElementById('multi-B').oninput = update;
+        document.getElementById('versus-R').oninput = update;
+        document.getElementById('versus-G').oninput = update;
+        document.getElementById('versus-B').oninput = update;
 
         this.currentRound = data.round;
         const q = data.question;
-        document.getElementById('multi-R').value = 128; 
-        document.getElementById('multi-G').value = 128; 
-        document.getElementById('multi-B').value = 128;
+        document.getElementById('versus-R').value = 128; 
+        document.getElementById('versus-G').value = 128; 
+        document.getElementById('versus-B').value = 128;
         this.updateColor();
-        document.getElementById('multi-round-display').innerText = "Round " + data.round;
-        document.getElementById('multi-question-color').style.backgroundColor = q.hex; 
+        document.getElementById('versus-round-display').innerText = "Round " + data.round;
+        document.getElementById('versus-question-color').style.backgroundColor = q.hex; 
     },
 
     updateColor: function() {
-        const r = document.getElementById('multi-R').value; 
-        const g = document.getElementById('multi-G').value; 
-        const b = document.getElementById('multi-B').value;
-        document.getElementById('multi-val-R').innerText = r; 
-        document.getElementById('multi-val-G').innerText = g; 
-        document.getElementById('multi-val-B').innerText = b;
+        const r = document.getElementById('versus-R').value; 
+        const g = document.getElementById('versus-G').value; 
+        const b = document.getElementById('versus-B').value;
+        document.getElementById('versus-val-R').innerText = r; 
+        document.getElementById('versus-val-G').innerText = g; 
+        document.getElementById('versus-val-B').innerText = b;
     },
 
     submitGuess: function() {
-        const r = parseInt(document.getElementById('multi-R').value); 
-        const g = parseInt(document.getElementById('multi-G').value); 
-        const b = parseInt(document.getElementById('multi-B').value);
+        const r = parseInt(document.getElementById('versus-R').value); 
+        const g = parseInt(document.getElementById('versus-G').value); 
+        const b = parseInt(document.getElementById('versus-B').value);
         this.roomRef.child(`players/${this.role}`).update({ 
             color: {r, g, b, hex: utils.rgbToHex(r,g,b)}, 
             status: 'guessed' 
         });
-        document.getElementById('multi-guess-btn').classList.add('hidden');
-        document.getElementById('multi-wait-msg').classList.remove('hidden');
+        document.getElementById('versus-guess-btn').classList.add('hidden');
+        document.getElementById('versus-wait-msg').classList.remove('hidden');
     },
 
     calcResult: function(data) {
@@ -935,10 +844,9 @@ const multiGame = {
         this.roomRef.update(updates);
     },
 
-
     showResult: function(data) {
-        if(!document.getElementById('screen-multi-result').classList.contains('active')) {
-            app.showScreen('multi-result');
+        if(!document.getElementById('screen-versus-result').classList.contains('active')) {
+            app.showScreen('versus-result');
         }
 
         const q = data.question;
@@ -961,10 +869,7 @@ const multiGame = {
 
         activePlayers.sort((a, b) => Number(b.score) - Number(a.score));
 
-        // --- Result Grid Rendering ---
-        const resultContainer = document.getElementById('multi-result-container');
-        
-        // ★修正: 人数に応じたクラス(players-N)を付与してCSSでレイアウト制御しやすくする
+        const resultContainer = document.getElementById('versus-result-container');
         let html = `<div class="res-grid-container players-${activePlayers.length}">`;
         
         activePlayers.forEach((p, idx) => {
@@ -986,11 +891,9 @@ const multiGame = {
         html += '</div>';
         resultContainer.innerHTML = html;
 
-        // Title
-        const title = document.getElementById('multi-result-title');
+        const title = document.getElementById('versus-result-title');
         const myRank = activePlayers.findIndex(p => p.me);
         
-        // ★修正: 自分の順位に応じてタイトルを変更
         if (myRank === 0) {
             title.innerText = "WINNER!";
             title.style.color = "var(--accent-gold)";
@@ -1006,14 +909,12 @@ const multiGame = {
         }
 
         const goal = data.maxWins || 5;
-        document.getElementById('multi-goal-val').innerText = (goal > 0) ? goal : "∞";
+        document.getElementById('versus-goal-val').innerText = (goal > 0) ? goal : "∞";
 
-        // --- Compare Grid (Dynamic Layout) ---
-        // Target is top, then players below
-        document.getElementById('multi-ans-color').style.backgroundColor = q.hex;
-        document.getElementById('multi-ans-text').innerText = `${q.r}, ${q.g}, ${q.b}`;
+        document.getElementById('versus-ans-color').style.backgroundColor = q.hex;
+        document.getElementById('versus-ans-text').innerText = `${q.r}, ${q.g}, ${q.b}`;
 
-        const playersCompContainer = document.getElementById('multi-players-compare');
+        const playersCompContainer = document.getElementById('versus-players-compare');
         
         if (activePlayers.length === 4) {
             playersCompContainer.className = "multi-players-wrapper grid-2x2";
@@ -1034,7 +935,6 @@ const multiGame = {
         });
         playersCompContainer.innerHTML = compareHtml;
 
-        // Winner Check
         let champion = null;
         if (goal > 0) {
             activePlayers.forEach(p => {
@@ -1042,9 +942,9 @@ const multiGame = {
             });
         }
 
-        const winDeclare = document.getElementById('multi-final-winner');
-        const btn = document.getElementById('multi-continue-btn');
-        const contMsg = document.getElementById('multi-continue-status');
+        const winDeclare = document.getElementById('versus-final-winner');
+        const btn = document.getElementById('versus-continue-btn');
+        const contMsg = document.getElementById('versus-continue-status');
 
         if (champion) {
             winDeclare.classList.remove('hidden');
@@ -1083,7 +983,7 @@ const multiGame = {
     },
 
     voteContinue: function() {
-        const btn = document.getElementById('multi-continue-btn');
+        const btn = document.getElementById('versus-continue-btn');
         btn.disabled = true; btn.innerText = "WAITING..."; btn.style.background = "#555"; btn.style.opacity = "0.7";
         this.roomRef.child(`players/${this.role}`).update({ status: 'ready' });
     },
@@ -1118,10 +1018,23 @@ const multiGame = {
     }
 };
 
-document.getElementById('multi-room-input').addEventListener('input', function(e) {
+document.getElementById('versus-room-input').addEventListener('input', function(e) {
     this.value = this.value.replace(/[^0-9]/g, '');
 });
 
+// ▼ Initialize App
 window.onload = function() {
-    app.showScreen('menu');
+    const savedScreen = localStorage.getItem('current_screen');
+    menuLogic.init();
+
+    if (savedScreen && savedScreen !== 'menu') {
+        if (savedScreen === 'origin') originGame.init();
+        else if (savedScreen === 'rush') rushGame.init();
+        else if (savedScreen === 'survival') survivalGame.init();
+        else if (savedScreen === 'daily') dailyGame.init();
+        else if (savedScreen === 'anotherworld') anotherGame.init();
+        app.showScreen(savedScreen);
+    } else {
+        app.showScreen('menu');
+    }
 };

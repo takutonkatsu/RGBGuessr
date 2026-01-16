@@ -62,23 +62,26 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .daily-status.played { background: rgba(255, 255, 255, 0.1); color: #fff; box-shadow: none; border: 1px solid rgba(255, 255, 255, 0.2); }
 @media (max-width: 600px) { .daily-section { flex-direction: column; text-align: center; padding: 25px 20px; } .daily-main-container { flex-direction: column; align-items: center; gap: 15px; } .daily-preview-large { width: 120px; height: 120px; margin-bottom: 10px; } .daily-title { font-size: 1.8rem; } .daily-status { width: 100%; margin-top: 15px; } }
 
-/* Cards & Grid */
+/* Cards */
 .menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 40px; }
 .game-card { background: rgba(20, 22, 28, 0.6); border: 1px solid var(--panel-border); border-radius: 16px; padding: 18px; display: flex; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
 .game-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5); background: rgba(30, 32, 40, 0.8); border-color: rgba(255, 255, 255, 0.2); }
 .game-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
-.card-original::before { background: var(--accent-red); } .card-rush::before { background: var(--accent-green); } .card-challenge::before { background: var(--accent-blue); } .card-multi::before { background: var(--primary-multi); }
+.card-origin::before { background: var(--accent-red); } .card-rush::before { background: var(--accent-green); } .card-survival::before { background: var(--accent-blue); } .card-versus::before { background: var(--primary-multi); }
 .card-icon { font-size: 1.8rem; margin-right: 15px; }
 .card-content h3 { margin: 0; font-size: 1.1rem; }
 .card-content p { margin: 4px 0 0; font-size: 0.75rem; color: var(--text-muted); }
 .record-badge { display: inline-block; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; font-family: var(--font-mono); color: #eee; margin-top: 6px; line-height: 1.4; }
 .record-badge span { color: var(--accent-yellow); font-weight: bold; }
 
+/* Origin Badge */
+.std-badge { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; font-size: 0.65rem; font-weight: 900; padding: 4px 8px; border-bottom-left-radius: 10px; letter-spacing: 1px; box-shadow: -2px 2px 5px rgba(0,0,0,0.3); z-index: 10; }
+
 /* Explanation */
 .about-section { border-top: 1px solid var(--panel-border); padding-top: 25px; margin-top: 20px; }
 .about-title { font-size: 0.9rem; color: var(--text-muted); font-weight: bold; margin-bottom: 12px; text-align: center; letter-spacing: 1px; }
 .about-card { background: var(--panel-glass); border: 1px solid var(--panel-border); border-radius: 12px; padding: 15px; margin-bottom: 12px; position: relative; overflow: hidden; }
-.about-card.about-rush { border-left: 4px solid var(--accent-green); } .about-card.about-original { border-left: 4px solid var(--accent-red); } .about-card.about-challenge { border-left: 4px solid var(--accent-blue); } .about-card.about-multi { border-left: 4px solid var(--primary-multi); }
+.about-card.about-rush { border-left: 4px solid var(--accent-green); } .about-card.about-origin { border-left: 4px solid var(--accent-red); } .about-card.about-survival { border-left: 4px solid var(--accent-blue); } .about-card.about-versus { border-left: 4px solid var(--primary-multi); }
 .about-card h4 { margin: 0 0 6px 0; font-size: 1rem; color: #fff; }
 .about-card p { margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
 
@@ -89,7 +92,7 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 /* Game UI */
 .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .game-title { margin: 0; font-size: 1.3rem; letter-spacing: -1px; padding-left: 12px; border-left: 4px solid transparent; line-height: 1.1; }
-.color-original { border-left-color: var(--accent-red); } .color-rush { border-left-color: var(--accent-green); } .color-challenge { border-left-color: var(--accent-blue); } .color-storage { border-left-color: #888; } .color-daily { border-left-color: #fff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); } .color-multi { border-left-color: var(--primary-multi); }
+.color-origin { border-left-color: var(--accent-red); } .color-rush { border-left-color: var(--accent-green); } .color-survival { border-left-color: var(--accent-blue); } .color-storage { border-left-color: #888; } .color-daily { border-left-color: #fff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); } .color-versus { border-left-color: var(--primary-multi); }
 .digital-timer { font-family: var(--font-mono); font-size: 1.3rem; color: var(--text-main); }
 .glass-panel { background: var(--panel-glass); border: 1px solid var(--panel-border); backdrop-filter: blur(12px); border-radius: 16px; padding: 15px; margin-bottom: 15px; }
 .color-display-area { display: flex; gap: 12px; margin-bottom: 15px; }
@@ -99,7 +102,7 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .large-box { aspect-ratio: 16 / 9; height: 140px; margin-bottom: 15px; }
 .overlay-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; opacity: 0.2; font-weight: bold; }
 
-/* Slider (Compact) */
+/* Slider */
 .slider-container { padding: 20px 15px; }
 .slider-row { display: flex; align-items: center; margin-bottom: 20px; height: 25px; }
 .slider-row:last-child { margin-bottom: 0; }
@@ -113,7 +116,7 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .main-action-btn { width: 100%; padding: 15px; border: none; border-radius: 14px; background: linear-gradient(135deg, #ffa502, #ff7043); color: #fff; font-size: 1rem; font-weight: 700; letter-spacing: 1px; cursor: pointer; box-shadow: 0 8px 16px rgba(255, 165, 2, 0.3); transition: transform 0.1s, box-shadow 0.2s; }
 .main-action-btn:active { transform: scale(0.98); box-shadow: 0 4px 8px rgba(255, 165, 2, 0.2); }
 
-/* Result Screen (Compact) */
+/* Result Screen */
 .result-screen { text-align: center; padding-top: 5px; }
 .result-page-title { margin: 0 0 15px; font-size: 1.1rem; letter-spacing: 2px; color: var(--text-muted); }
 .result-title-big { margin: 0 0 8px; font-size: 2.2rem; letter-spacing: 1px; }
@@ -135,37 +138,6 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .btn-primary:disabled { background: #555; color: #888; cursor: not-allowed; opacity: 0.7; }
 .btn-text { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; text-decoration: underline; }
 
-/* Rush Mode Styles (Green Theme) */
-.rush-hud {
-    display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; padding: 0 10px;
-}
-.rush-hud-item { text-align: center; }
-.rush-hud-label { font-size: 0.7rem; color: var(--accent-green); font-weight: bold; letter-spacing: 2px; }
-.rush-timer-big {
-    font-family: var(--font-mono); font-size: 3.5rem; font-weight: 900; color: var(--accent-green); line-height: 0.9;
-    text-shadow: 0 0 20px rgba(46, 213, 115, 0.4);
-}
-.rush-score-val {
-    font-family: var(--font-mono); font-size: 1.5rem; color: #fff; font-weight: bold;
-}
-.rush-combo {
-    position: absolute; top: 100px; left: 50%; transform: translateX(-50%) rotate(-5deg);
-    font-family: var(--font-mono); font-weight: 900; font-size: 2rem; color: #fff;
-    text-shadow: 2px 2px 0 var(--bg-dark), 0 0 15px var(--accent-green);
-    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    pointer-events: none; z-index: 10; white-space: nowrap;
-}
-@keyframes popIn { from { transform: translateX(-50%) scale(0) rotate(-20deg); opacity: 0; } to { transform: translateX(-50%) scale(1) rotate(-5deg); opacity: 1; } }
-
-.time-popup {
-    position: absolute; font-family: var(--font-mono); text-align: center; font-weight: 900; pointer-events: none;
-    text-shadow: 0 0 5px rgba(0,0,0,0.8); animation: floatUp 0.8s ease-out forwards; z-index: 1000; line-height: 1.1;
-}
-.popup-acc { font-size: 1.5rem; color: #fff; }
-.popup-time { font-size: 2rem; }
-.popup-time.good { color: var(--accent-green); } .popup-time.bad { color: var(--accent-red); } .popup-time.safe { color: #ccc; font-size: 1.5rem; }
-@keyframes floatUp { 0% { transform: translateY(0) scale(0.8); opacity: 0; } 20% { transform: translateY(-10px) scale(1.1); opacity: 1; } 100% { transform: translateY(-80px) scale(1); opacity: 0; } }
-
 /* History List */
 .history-log { margin-top: 15px; text-align: left; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 8px; }
 .history-item { display: grid; grid-template-columns: 35px 1fr 90px; gap: 8px; align-items: center; padding: 10px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); background: rgba(255, 255, 255, 0.02); border-radius: 8px; margin-bottom: 4px; }
@@ -182,6 +154,16 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .history-ao5-badge { font-size: 0.6rem; color: var(--bg-dark); background: var(--text-muted); padding: 1px 4px; border-radius: 3px; font-weight: bold; display: inline-block; white-space: nowrap; margin-top: 2px; }
 .history-ao5-badge.highlight { background: var(--accent-yellow); color: #000; box-shadow: 0 0 5px rgba(255, 165, 2, 0.5); }
 .history-ao5-badge.placeholder { background: transparent; color: #444; border: 1px solid #333; }
+
+/* Rush Mode Styles (Green) */
+.rush-timer-big { font-family: var(--font-mono); font-size: 3.5rem; font-weight: 900; color: var(--accent-green); line-height: 0.9; text-shadow: 0 0 20px rgba(46, 213, 115, 0.4); }
+.rush-combo { position: absolute; top: 100px; left: 50%; transform: translateX(-50%) rotate(-5deg); font-family: var(--font-mono); font-weight: 900; font-size: 2rem; color: #fff; text-shadow: 2px 2px 0 var(--bg-dark), 0 0 15px var(--accent-green); animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; z-index: 10; white-space: nowrap; }
+@keyframes popIn { from { transform: translateX(-50%) scale(0) rotate(-20deg); opacity: 0; } to { transform: translateX(-50%) scale(1) rotate(-5deg); opacity: 1; } }
+.time-popup { position: absolute; font-family: var(--font-mono); text-align: center; font-weight: 900; pointer-events: none; text-shadow: 0 0 5px rgba(0,0,0,0.8); animation: floatUp 0.8s ease-out forwards; z-index: 1000; line-height: 1.1; }
+.popup-acc { font-size: 1.5rem; color: #fff; }
+.popup-time { font-size: 2rem; }
+.popup-time.good { color: var(--accent-green); } .popup-time.bad { color: var(--accent-red); } .popup-time.safe { color: #ccc; font-size: 1.5rem; }
+@keyframes floatUp { 0% { transform: translateY(0) scale(0.8); opacity: 0; } 20% { transform: translateY(-10px) scale(1.1); opacity: 1; } 100% { transform: translateY(-80px) scale(1); opacity: 0; } }
 
 /* Challenge Extras */
 .challenge-status-bar { display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; background: rgba(20, 22, 28, 0.8); padding: 12px; border-radius: 14px; border: 1px solid var(--panel-border); position: relative; overflow: hidden; }
@@ -200,7 +182,7 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .history-goal-text { font-size: 0.6rem; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; margin-top: 2px; }
 .stage-badge-history { font-family: var(--font-mono); font-weight: bold; color: var(--bg-dark); background: var(--text-muted); padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; display: inline-block; white-space: nowrap; }
 
-/* Multiplayer (Unified) Styles */
+/* Versus (Multiplayer) Styles */
 .multi-name-area { margin-bottom: 25px; }
 .input-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 1px; }
 .name-input { font-size: 1.1rem; font-family: var(--font-mono); text-align: center; width: 180px; background: transparent; border: none; border-bottom: 2px solid var(--text-muted); color: #fff; padding: 4px; outline: none; transition: 0.3s; }
@@ -220,38 +202,12 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .slot-name { font-weight: bold; font-size: 0.85rem; }
 .slot-status { font-size: 0.65rem; color: #aaa; }
 
-/* Multiplayer Result Grid System */
 .result-title-style { margin: 0 0 10px; font-size: 1.8rem; letter-spacing: 1px; font-weight: 700; color: #ccc; }
 .winner-declare { font-size: 1.3rem; color: var(--accent-gold); font-weight: 900; animation: pulse 1s infinite; margin-bottom: 8px; }
 
-.res-grid-container { 
-    display: flex; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 10px; 
-    margin-bottom: 15px; 
-    width: 100%;
-}
-
-.res-grid-box { 
-    background: rgba(255,255,255,0.05); 
-    border-radius: 12px; 
-    padding: 12px 8px; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    position: relative; 
-    border: 1px solid rgba(255,255,255,0.1);
-    /* 2人・4人用 (デフォルト) */
-    width: 45%; 
-    max-width: 130px;
-}
-
-/* ★修正: 3人対戦の時は横並びにする（幅を調整） */
-.res-grid-container.players-3 .res-grid-box {
-    width: 32%; /* 3つ並ぶサイズ */
-    max-width: none; 
-}
+.res-grid-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 15px; width: 100%; }
+.res-grid-box { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; position: relative; border: 1px solid rgba(255,255,255,0.1); width: 45%; max-width: 130px; }
+.res-grid-container.players-3 .res-grid-box { width: 32%; max-width: none; }
 
 .res-grid-rank { font-size: 1.1rem; font-weight: 900; font-style: italic; margin-bottom: 2px; }
 .rank-1st { color: var(--accent-gold); font-size: 1.4rem; }
@@ -262,31 +218,17 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .res-you-badge { font-size: 0.55rem; color: var(--accent-green); letter-spacing: 1px; position: absolute; top: 4px; right: 4px; }
 .res-win-badge { margin-top: 4px; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
 
-/* Multiplayer Compare Area */
 .multi-compare-wrapper { display: flex; flex-direction: column; align-items: center; margin: 15px 0; width: 100%; }
 .multi-compare-target { text-align: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); width: 80%; }
 .large-target-box { width: 70px; height: 70px; margin: 5px auto; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); }
 .multi-players-wrapper { width: 100%; justify-content: center; }
+.flex-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; justify-items: center; }
+.multi-compare-item { text-align: center; width: 85px; }
+.multi-compare-label { font-size: 0.7rem; color: #aaa; margin-bottom: 4px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.rgb-value-text { display: block; font-family: var(--font-mono); font-size: 0.65rem; color: #888; margin-top: 2px; }
 
-/* 比較エリアのレイアウト切り替え */
-.multi-players-wrapper.flex-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-}
-.multi-players-wrapper.grid-2x2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    justify-items: center;
-}
-
-.multi-compare-item { text-align: center; width: 80px; }
-.multi-compare-label { font-size: 0.65rem; color: #aaa; margin-bottom: 3px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.rgb-value-text { display: block; font-family: var(--font-mono); font-size: 0.6rem; color: #888; margin-top: 2px; }
-
-/* Daily Result Styling (Compact) */
+/* Daily Result (Compact) */
 .daily-result-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 20px; padding: 25px 15px; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
 .daily-res-header { margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
 .daily-res-label { display: block; font-size: 0.75rem; letter-spacing: 3px; color: var(--accent-gold); font-weight: bold; margin-bottom: 4px; }
@@ -308,69 +250,11 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .glitch-text { text-shadow: 2px 0 red, -2px 0 blue; }
 .btn-mono { background: #333; box-shadow: none; border: 1px solid #555; }
 
-
-/* ▼ Logo Color Ranks */
-/* Default is defined in .logo-text */
-
-/* Rank 1: Blue (90%+) */
-.logo-rank-blue {
-    background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%) !important;
-    background-clip: text !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
-}
-
-/* Rank 2: Red (95%+) */
-.logo-rank-red {
-    background: linear-gradient(to right, #ff9a9e 0%, #fecfef 99%, #feada6 100%) !important; 
-    /* Red-ish gradient */
-    background: linear-gradient(120deg, #f093fb 0%, #f5576c 100%) !important;
-    background-clip: text !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    text-shadow: 0 0 15px rgba(245, 87, 108, 0.4);
-}
-
-/* Rank 3: Purple (98%+) */
-.logo-rank-purple {
-    background: linear-gradient(to right, #b24592 0%, #f15f79 100%) !important;
-    background-clip: text !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    text-shadow: 0 0 15px rgba(178, 69, 146, 0.4);
-}
-
-/* Rank 4: Cyan (99%+) */
-.logo-rank-cyan {
-    background: linear-gradient(to right, #00c6ff, #0072ff) !important;
-    background-clip: text !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    text-shadow: 0 0 20px rgba(0, 198, 255, 0.5);
-}
-
-/* Rank 5: Gold (99.5%+) */
-.logo-rank-gold {
-    background: linear-gradient(to right, #f7971e, #ffd200) !important;
-    background-clip: text !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    text-shadow: 0 0 25px rgba(255, 210, 0, 0.6);
-}
-
-/* Rank 6: Rainbow (99.9%+) */
-.logo-rank-rainbow {
-    background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000) !important;
-    background-size: 400% 100% !important;
-    background-clip: text !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    animation: rainbow-text 3s linear infinite;
-    text-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
-}
-
-@keyframes rainbow-text {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
-}
+/* Logo Color Ranks */
+.logo-rank-blue { background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%) !important; background-clip: text !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
+.logo-rank-red { background: linear-gradient(to right, #ff9a9e 0%, #fecfef 99%, #feada6 100%) !important; background: linear-gradient(120deg, #f093fb 0%, #f5576c 100%) !important; background-clip: text !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 0 15px rgba(245, 87, 108, 0.4); }
+.logo-rank-purple { background: linear-gradient(to right, #b24592 0%, #f15f79 100%) !important; background-clip: text !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 0 15px rgba(178, 69, 146, 0.4); }
+.logo-rank-cyan { background: linear-gradient(to right, #00c6ff, #0072ff) !important; background-clip: text !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 0 20px rgba(0, 198, 255, 0.5); }
+.logo-rank-gold { background: linear-gradient(to right, #f7971e, #ffd200) !important; background-clip: text !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 0 25px rgba(255, 210, 0, 0.6); }
+.logo-rank-rainbow { background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000) !important; background-size: 400% 100% !important; background-clip: text !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; animation: rainbow-text 3s linear infinite; text-shadow: 0 0 30px rgba(255, 255, 255, 0.4); }
+@keyframes rainbow-text { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }

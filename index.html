@@ -29,7 +29,7 @@
 
     <header class="app-header">
         <div class="logo" id="app-logo" onclick="app.backToMenu()">
-            <img src="Retina_icon.png" alt="icon" class="logo-icon">
+            <img src="Retina_icon.png" alt="icon" class="logo-icon" id="source-logo-icon">
             <span class="logo-text">RETINA</span>
         </div>
         <button id="back-btn" class="nav-btn hidden" onclick="app.backToMenu()">
@@ -59,12 +59,13 @@
             </div>
 
             <div class="menu-grid">
-                <div class="game-card card-original" onclick="app.startGame('original')">
+                <div class="game-card card-origin" onclick="app.startGame('origin')">
+                    <div class="std-badge">STANDARD</div>
                     <div class="card-icon">🧠</div>
                     <div class="card-content">
                         <h3>Origin</h3>
                         <p>数値のみで挑む真剣勝負</p>
-                        <div class="record-badge" id="menu-original-record">NO RECORD</div>
+                        <div class="record-badge" id="menu-origin-record">NO RECORD</div>
                     </div>
                 </div>
 
@@ -77,16 +78,16 @@
                     </div>
                 </div>
 
-                <div class="game-card card-challenge" onclick="app.startGame('challenge')">
+                <div class="game-card card-survival" onclick="app.startGame('survival')">
                     <div class="card-icon">🔥</div>
                     <div class="card-content">
                         <h3>Survival</h3>
                         <p>極限へ至るサバイバル</p>
-                        <div class="record-badge" id="menu-challenge-record">Start: Stage 1</div>
+                        <div class="record-badge" id="menu-survival-record">Start: Stage 1</div>
                     </div>
                 </div>
 
-                <div class="game-card card-multi" onclick="app.startGame('multi')">
+                <div class="game-card card-versus" onclick="app.startGame('versus')">
                     <div class="card-icon">⚔️</div>
                     <div class="card-content">
                         <h3>Versus</h3>
@@ -107,19 +108,19 @@
                     <h4>What is RGB?</h4>
                     <p>光の三原色（Red/Green/Blue）を0〜255の数値で表現するシステム。このゲームは、あなたの網膜と脳内変換の精度を極限まで高めるトレーニングツールです。</p>
                 </div>
-                <div class="about-card about-original">
+                <div class="about-card about-origin">
                     <h4>Origin</h4>
-                    <p>視覚的なヒント無しでRGB数値を導き出す、ストイックなスタンダードモード。純粋な知識と色彩感覚が試される、Retinaの原点です。</p>
+                    <p>視覚的なヒント無しでRGB数値を導き出す、ストイックなスタンダードモード。純粋な知識と色彩感覚が試される、Retinaの真髄です。</p>
                 </div>
                 <div class="about-card about-rush">
                     <h4>Rush</h4>
                     <p>60秒間のタイムアタック。高精度（95%以上）で回答すると残り時間が増え、ミス（90%未満）すると時間が減ります。正確さと速さの両立が鍵。</p>
                 </div>
-                <div class="about-card about-challenge">
+                <div class="about-card about-survival">
                     <h4>Survival</h4>
                     <p>ステージ進行と共に厳しくなるノルマ。一度のミスも許されないプレッシャーの中で、自身の限界到達点を探る上級者向けサバイバル。</p>
                 </div>
-                <div class="about-card about-multi">
+                <div class="about-card about-versus">
                     <h4>Versus</h4>
                     <p>2〜4人で遊べるリアルタイムバトル。人数に合わせて部屋を作り、同じ色を同時に解いて精度を競い合います。</p>
                 </div>
@@ -159,26 +160,21 @@
                 Next Color in: <span id="daily-next-timer" style="color:#fff; font-family:var(--font-mono); font-weight:bold;">--:--:--</span>
             </div>
             <div class="modal-buttons">
-                <button onclick="app.backToMenu()" class="btn-primary">BACK TO MENU</button>
+                <button onclick="dailyGame.shareResult()" class="btn-primary" style="background: linear-gradient(135deg, #1DA1F2, #0077b5);">SHARE IMAGE</button>
+                <button onclick="app.backToMenu()" class="btn-text">BACK TO MENU</button>
             </div>
         </section>
 
         <section id="screen-rush" class="screen fade-in">
-            <div class="rush-hud">
-                <div class="rush-hud-item">
-                    <span class="rush-hud-label">TIME</span>
+            <div class="game-header">
+                <h2 class="game-title color-rush">Rush</h2>
+                <div style="text-align:right;">
                     <div id="rush-timer" class="rush-timer-big">60.00</div>
-                </div>
-                <div class="rush-hud-item">
-                    <span class="rush-hud-label">SCORE</span>
-                    <div id="rush-current-score" class="rush-score-val">0</div>
+                    <div style="font-size:0.8rem; color:#aaa;">SCORE: <span id="rush-current-score" style="color:#fff; font-weight:bold;">0</span></div>
                 </div>
             </div>
-            
             <div id="rush-combo-display" class="rush-combo hidden">0 COMBO</div>
-            
             <div id="rush-effect-container" style="position:fixed; top:30%; left:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:100;"></div>
-
             <div class="color-display-area">
                 <div class="color-panel"><span class="panel-label">TARGET</span><div id="rush-question-color" class="color-box"></div></div>
                 <div class="color-panel"><span class="panel-label">YOURS</span><div id="rush-input-color" class="color-box"></div></div>
@@ -188,98 +184,95 @@
                 <div class="slider-row"><label class="label-g">G</label><input type="range" id="rush-G" class="custom-range range-g" min="0" max="255" value="128"><span id="rush-val-G" class="val-num">128</span></div>
                 <div class="slider-row"><label class="label-b">B</label><input type="range" id="rush-B" class="custom-range range-b" min="0" max="255" value="128"><span id="rush-val-B" class="val-num">128</span></div>
             </div>
-            <button id="rush-guess-btn" class="main-action-btn" style="background:var(--accent-green);">GUESS</button>
+            <button id="rush-guess-btn" class="main-action-btn">GUESS</button>
         </section>
 
         <section id="screen-result-rush" class="screen fade-in result-screen">
             <h2 class="result-page-title">RUSH RESULT</h2>
             <div id="rush-new-record" class="new-record hidden">NEW HIGH SCORE!</div>
             <div class="score-display"><span class="score-label">TOTAL SCORE</span><h1 id="rush-final-score">0</h1></div>
-            
             <div class="stats-row">
                 <div class="stat-box"><span class="stat-label">Max Combo</span><span id="rush-max-combo" class="stat-value highlight">0</span></div>
                 <div class="stat-box"><span class="stat-label">Correct</span><span id="rush-count" class="stat-value">0</span></div>
                 <div class="stat-box"><span class="stat-label">Best Score</span><span id="rush-best" class="stat-value">--</span></div>
             </div>
-
             <div class="modal-buttons">
-                <button onclick="rushGame.init()" class="btn-primary" style="background:var(--accent-green);">RETRY</button>
-                <button onclick="app.backToMenu()" class="btn-text">Menu</button>
+                <button onclick="rushGame.init()" class="btn-primary">RETRY</button>
                 <button onclick="rushGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
-            </div>
+                </div>
         </section>
 
-        <section id="screen-original" class="screen fade-in">
-            <div class="game-header"><h2 class="game-title color-original">Origin</h2></div>
-            <div class="single-color-display"><div id="original-question-color" class="color-box large-box"><span class="overlay-text">?</span></div></div>
+        <section id="screen-origin" class="screen fade-in">
+            <div class="game-header"><h2 class="game-title color-origin">Origin</h2></div>
+            <div class="single-color-display"><div id="origin-question-color" class="color-box large-box"><span class="overlay-text">?</span></div></div>
             <div class="slider-container glass-panel">
-                <div class="slider-row"><label class="label-r">R</label><input type="range" id="original-R" class="custom-range range-r" min="0" max="255" value="128"><span id="original-val-R" class="val-num">128</span></div>
-                <div class="slider-row"><label class="label-g">G</label><input type="range" id="original-G" class="custom-range range-g" min="0" max="255" value="128"><span id="original-val-G" class="val-num">128</span></div>
-                <div class="slider-row"><label class="label-b">B</label><input type="range" id="original-B" class="custom-range range-b" min="0" max="255" value="128"><span id="original-val-B" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-r">R</label><input type="range" id="origin-R" class="custom-range range-r" min="0" max="255" value="128"><span id="origin-val-R" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-g">G</label><input type="range" id="origin-G" class="custom-range range-g" min="0" max="255" value="128"><span id="origin-val-G" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-b">B</label><input type="range" id="origin-B" class="custom-range range-b" min="0" max="255" value="128"><span id="origin-val-B" class="val-num">128</span></div>
             </div>
-            <button id="original-guess-btn" class="main-action-btn">GUESS</button>
+            <button id="origin-guess-btn" class="main-action-btn">GUESS</button>
         </section>
 
-        <section id="screen-result-original" class="screen fade-in result-screen">
+        <section id="screen-result-origin" class="screen fade-in result-screen">
             <h2 class="result-page-title">ORIGIN RESULT</h2>
-            <div id="original-new-record" class="new-record hidden">NEW RECORD!</div>
-            <div class="score-display"><span class="score-label">SCORE</span><h1 id="original-score">0%</h1></div>
+            <div id="origin-new-record" class="new-record hidden">NEW RECORD!</div>
+            <div class="score-display"><span class="score-label">SCORE</span><h1 id="origin-score">0%</h1></div>
             <div class="compare-row">
-                <div class="compare-item"><p class="compare-label">TARGET</p><div id="original-ans-color" class="mini-box"></div><span id="original-ans-text"></span></div>
-                <div class="compare-item"><p class="compare-label">YOU</p><div id="original-your-color" class="mini-box"></div><span id="original-your-text"></span></div>
+                <div class="compare-item"><p class="compare-label">TARGET</p><div id="origin-ans-color" class="mini-box"></div><span id="origin-ans-text"></span></div>
+                <div class="compare-item"><p class="compare-label">YOU</p><div id="origin-your-color" class="mini-box"></div><span id="origin-your-text"></span></div>
             </div>
             <div class="stats-row">
-                <div class="stat-box"><span class="stat-label">Personal Best</span><span id="original-pb" class="stat-value highlight">--</span></div>
-                <div class="stat-box"><span class="stat-label">Ao5</span><span id="original-ao5" class="stat-value">--</span></div>
+                <div class="stat-box"><span class="stat-label">Personal Best</span><span id="origin-pb" class="stat-value highlight">--</span></div>
+                <div class="stat-box"><span class="stat-label">Ao5</span><span id="origin-ao5" class="stat-value">--</span></div>
             </div>
             <div class="modal-buttons">
-                <button onclick="originalGame.nextColor()" class="btn-primary">NEXT COLOR</button>
-                <button onclick="originalGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
+                <button onclick="originGame.nextColor()" class="btn-primary">NEXT COLOR</button>
+                <button onclick="originGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
             </div>
-            <div id="original-history" class="history-log"></div>
+            <div id="origin-history" class="history-log"></div>
         </section>
 
-        <section id="screen-challenge" class="screen fade-in">
-            <div class="game-header"><h2 class="game-title color-challenge">Survival</h2></div>
+        <section id="screen-survival" class="screen fade-in">
+            <div class="game-header"><h2 class="game-title color-survival">Survival</h2></div>
             <div class="challenge-status-bar">
                 <div class="challenge-info-top">
-                    <div><span class="stage-title">STAGE</span><div class="stage-number-big" id="challenge-stage-num">01</div></div>
-                    <div class="goal-display"><span class="goal-label">GOAL</span><div class="goal-val" id="challenge-aim-score">90.00%</div></div>
+                    <div><span class="stage-title">STAGE</span><div class="stage-number-big" id="survival-stage-num">01</div></div>
+                    <div class="goal-display"><span class="goal-label">GOAL</span><div class="goal-val" id="survival-aim-score">90.00%</div></div>
                 </div>
             </div>
-            <div class="single-color-display"><div id="challenge-sample" class="color-box large-box"><span class="overlay-text">?</span></div></div>
+            <div class="single-color-display"><div id="survival-sample" class="color-box large-box"><span class="overlay-text">?</span></div></div>
             <div class="slider-container glass-panel">
-                <div class="slider-row"><label class="label-r">R</label><input type="range" id="challenge-R" class="custom-range range-r" min="0" max="255" value="128"><span id="challenge-val-R" class="val-num">128</span></div>
-                <div class="slider-row"><label class="label-g">G</label><input type="range" id="challenge-G" class="custom-range range-g" min="0" max="255" value="128"><span id="challenge-val-G" class="val-num">128</span></div>
-                <div class="slider-row"><label class="label-b">B</label><input type="range" id="challenge-B" class="custom-range range-b" min="0" max="255" value="128"><span id="challenge-val-B" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-r">R</label><input type="range" id="survival-R" class="custom-range range-r" min="0" max="255" value="128"><span id="survival-val-R" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-g">G</label><input type="range" id="survival-G" class="custom-range range-g" min="0" max="255" value="128"><span id="survival-val-G" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-b">B</label><input type="range" id="survival-B" class="custom-range range-b" min="0" max="255" value="128"><span id="survival-val-B" class="val-num">128</span></div>
             </div>
-            <button id="challenge-guess-btn" class="main-action-btn">GUESS</button>
+            <button id="survival-guess-btn" class="main-action-btn">GUESS</button>
         </section>
 
-        <section id="screen-result-challenge" class="screen fade-in result-screen">
+        <section id="screen-result-survival" class="screen fade-in result-screen">
             <h2 class="result-page-title">SURVIVAL RESULT</h2>
-            <div id="challenge-new-record" class="new-record hidden">MAX STAGE UPDATED!</div>
-            <h1 id="challenge-score-text" style="font-size:3rem; margin:10px 0;">Clear!</h1>
+            <div id="survival-new-record" class="new-record hidden">MAX STAGE UPDATED!</div>
+            <h1 id="survival-score-text" style="font-size:3rem; margin:10px 0;">Clear!</h1>
             <div class="result-score-block">
-                <div class="score-item"><span class="label">SCORE</span><span id="challenge-result-score" class="val">0%</span></div>
+                <div class="score-item"><span class="label">SCORE</span><span id="survival-result-score" class="val">0%</span></div>
                 <div class="score-divider">/</div>
-                <div class="score-item"><span class="label">GOAL</span><span id="challenge-result-goal" class="val" style="color:var(--accent-green)">0%</span></div>
+                <div class="score-item"><span class="label">GOAL</span><span id="survival-result-goal" class="val" style="color:var(--accent-green)">0%</span></div>
             </div>
             <div class="compare-row">
-                <div class="compare-item"><p class="compare-label">TARGET</p><div id="challenge-ans-color" class="mini-box"></div><span id="challenge-ans-text"></span></div>
-                <div class="compare-item"><p class="compare-label">YOU</p><div id="challenge-your-color" class="mini-box"></div><span id="challenge-your-text"></span></div>
+                <div class="compare-item"><p class="compare-label">TARGET</p><div id="survival-ans-color" class="mini-box"></div><span id="survival-ans-text"></span></div>
+                <div class="compare-item"><p class="compare-label">YOU</p><div id="survival-your-color" class="mini-box"></div><span id="survival-your-text"></span></div>
             </div>
             <div class="stats-row">
                 <div class="stat-box">
                     <span class="stat-label">MAX STAGE</span>
-                    <span id="challenge-pb" class="stat-value highlight">1</span>
+                    <span id="survival-pb" class="stat-value highlight">1</span>
                 </div>
             </div>
             <div class="modal-buttons">
-                <button id="challenge-next-btn" class="btn-primary">NEXT STAGE</button>
-                <button onclick="challengeGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset</button>
+                <button id="survival-next-btn" class="btn-primary">NEXT STAGE</button>
+                <button onclick="survivalGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset</button>
             </div>
-            <div id="challenge-history" class="history-log"></div>
+            <div id="survival-history" class="history-log"></div>
         </section>
 
         <section id="screen-anotherworld" class="screen fade-in">
@@ -295,88 +288,88 @@
             <div style="text-align:center; margin-top:20px;"><button onclick="anotherGame.resetData()" class="btn-text" style="color:#555;">Delete All</button></div>
         </section>
 
-        <section id="screen-multi-menu" class="screen fade-in" style="text-align:center;">
-            <div class="game-header"><h2 class="game-title color-multi">Versus</h2></div>
-            <div class="multi-name-area">
+        <section id="screen-versus-menu" class="screen fade-in" style="text-align:center;">
+            <div class="game-header"><h2 class="game-title color-versus">Versus</h2></div>
+            <div class="versus-name-area">
                 <p class="input-label">YOUR NAME (Max 6)</p>
-                <input type="text" id="multi-name-input" maxlength="6" placeholder="Player" class="name-input">
+                <input type="text" id="versus-name-input" maxlength="6" placeholder="Player" class="name-input">
             </div>
             <div class="setting-area">
                 <label style="color:#aaa; font-size:0.8rem; display:block; margin-bottom:5px;">GOAL (Wins)</label>
-                <input type="number" id="multi-goal-input" class="name-input" placeholder="5" value="5" min="0" style="width:100px; font-size:1.5rem; border-color:var(--primary-multi);">
+                <input type="number" id="versus-goal-input" class="name-input" placeholder="5" value="5" min="0" style="width:100px; font-size:1.5rem; border-color:var(--primary-multi);">
                 <p style="color:#666; font-size:0.7rem; margin-top:5px;">Enter "0" for Endless Mode</p>
             </div>
             <div class="menu-grid">
-                <div class="game-card" style="border-color:var(--primary-multi);" onclick="multiGame.createRoom()">
+                <div class="game-card" style="border-color:var(--primary-multi);" onclick="versusGame.createRoom()">
                     <div class="card-icon">🏠</div><div class="card-content"><h3>CREATE ROOM</h3><p>部屋を作成</p></div>
                 </div>
-                <div class="game-card" style="border-color:var(--primary-multi);" onclick="multiGame.showJoinScreen()">
+                <div class="game-card" style="border-color:var(--primary-multi);" onclick="versusGame.showJoinScreen()">
                     <div class="card-icon">🔑</div><div class="card-content"><h3>JOIN ROOM</h3><p>部屋に参加</p></div>
                 </div>
             </div>
         </section>
 
-        <section id="screen-multi-join" class="screen fade-in" style="text-align:center;">
-            <div class="game-header"><h2 class="game-title color-multi">Join Room</h2></div>
+        <section id="screen-versus-join" class="screen fade-in" style="text-align:center;">
+            <div class="game-header"><h2 class="game-title color-versus">Join Room</h2></div>
             <p>Enter 4-digit Room ID</p>
-            <input type="tel" pattern="\d*" maxlength="4" id="multi-room-input" placeholder="0000" class="room-id-input" style="border-bottom-color:var(--primary-multi);">
-            <button class="main-action-btn" onclick="multiGame.joinRoom()">JOIN</button>
+            <input type="tel" pattern="\d*" maxlength="4" id="versus-room-input" placeholder="0000" class="room-id-input" style="border-bottom-color:var(--primary-multi);">
+            <button class="main-action-btn" onclick="versusGame.joinRoom()">JOIN</button>
         </section>
 
-        <section id="screen-multi-lobby" class="screen fade-in" style="text-align:center;">
-            <div class="game-header"><h2 class="game-title color-multi">Lobby</h2></div>
+        <section id="screen-versus-lobby" class="screen fade-in" style="text-align:center;">
+            <div class="game-header"><h2 class="game-title color-versus">Lobby</h2></div>
             <p>Share this Room ID</p>
-            <div id="multi-room-id-display" class="room-id-display" style="color:var(--primary-multi);">----</div>
-            <div id="multi-lobby-goal" style="color:#fff; font-family:var(--font-mono); margin-bottom:15px; font-weight:bold;">GOAL: ---</div>
+            <div id="versus-room-id-display" class="room-id-display" style="color:var(--primary-multi);">----</div>
+            <div id="versus-lobby-goal" style="color:#fff; font-family:var(--font-mono); margin-bottom:15px; font-weight:bold;">GOAL: ---</div>
             
-            <div class="multi-lobby-slots">
-                <div id="lobby-slot-1" class="multi-lobby-slot slot-filled"><span class="slot-name">---</span><span class="slot-status">HOST</span></div>
-                <div id="lobby-slot-2" class="multi-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
-                <div id="lobby-slot-3" class="multi-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
-                <div id="lobby-slot-4" class="multi-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
+            <div class="versus-lobby-slots">
+                <div id="lobby-slot-1" class="versus-lobby-slot slot-filled"><span class="slot-name">---</span><span class="slot-status">HOST</span></div>
+                <div id="lobby-slot-2" class="versus-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
+                <div id="lobby-slot-3" class="versus-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
+                <div id="lobby-slot-4" class="versus-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
             </div>
 
             <div id="host-start-area" class="hidden" style="margin-top:20px;">
-                <button onclick="multiGame.hostStartGame()" class="main-action-btn" style="background:var(--primary-multi);">START GAME</button>
+                <button onclick="versusGame.hostStartGame()" class="main-action-btn" style="background:var(--primary-multi);">START GAME</button>
             </div>
-            <p id="multi-status-text" class="status-text" style="margin-top:20px;">Waiting for players...</p>
+            <p id="versus-status-text" class="status-text" style="margin-top:20px;">Waiting for players...</p>
         </section>
 
-        <section id="screen-multi-battle" class="screen fade-in">
-            <div class="game-header"><h2 class="game-title color-multi">Battle</h2><div id="multi-round-display" class="digital-timer" style="font-size:1rem;">Round 1</div></div>
-            <div id="multi-opponent-status" class="opponent-status-bar" style="background:rgba(156, 136, 255, 0.1); color:var(--primary-multi); border-color:rgba(156, 136, 255, 0.2);">Waiting for answers...</div>
-            <div class="single-color-display"><div id="multi-question-color" class="color-box large-box"></div></div>
+        <section id="screen-versus-battle" class="screen fade-in">
+            <div class="game-header"><h2 class="game-title color-versus">Battle</h2><div id="versus-round-display" class="digital-timer" style="font-size:1rem;">Round 1</div></div>
+            <div id="versus-opponent-status" class="opponent-status-bar" style="background:rgba(156, 136, 255, 0.1); color:var(--primary-multi); border-color:rgba(156, 136, 255, 0.2);">Waiting for answers...</div>
+            <div class="single-color-display"><div id="versus-question-color" class="color-box large-box"></div></div>
             <div class="slider-container glass-panel">
-                <div class="slider-row"><label class="label-r">R</label><input type="range" id="multi-R" class="custom-range range-r" min="0" max="255" value="128"><span id="multi-val-R" class="val-num">128</span></div>
-                <div class="slider-row"><label class="label-g">G</label><input type="range" id="multi-G" class="custom-range range-g" min="0" max="255" value="128"><span id="multi-val-G" class="val-num">128</span></div>
-                <div class="slider-row"><label class="label-b">B</label><input type="range" id="multi-B" class="custom-range range-b" min="0" max="255" value="128"><span id="multi-val-B" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-r">R</label><input type="range" id="versus-R" class="custom-range range-r" min="0" max="255" value="128"><span id="versus-val-R" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-g">G</label><input type="range" id="versus-G" class="custom-range range-g" min="0" max="255" value="128"><span id="versus-val-G" class="val-num">128</span></div>
+                <div class="slider-row"><label class="label-b">B</label><input type="range" id="versus-B" class="custom-range range-b" min="0" max="255" value="128"><span id="versus-val-B" class="val-num">128</span></div>
             </div>
-            <button id="multi-guess-btn" class="main-action-btn" onclick="multiGame.submitGuess()">GUESS</button>
-            <p id="multi-wait-msg" class="hidden" style="text-align:center; color:#888;">Waiting for others...</p>
+            <button id="versus-guess-btn" class="main-action-btn" onclick="versusGame.submitGuess()">GUESS</button>
+            <p id="versus-wait-msg" class="hidden" style="text-align:center; color:#888;">Waiting for others...</p>
         </section>
 
-        <section id="screen-multi-result" class="screen fade-in result-screen">
-            <h2 id="multi-result-title" class="result-title-style">ROUND WINNER!</h2>
-            <div id="multi-final-winner" class="hidden winner-declare"></div>
+        <section id="screen-versus-result" class="screen fade-in result-screen">
+            <h2 id="versus-result-title" class="result-title-style">ROUND WINNER!</h2>
+            <div id="versus-final-winner" class="hidden winner-declare"></div>
             
-            <div id="multi-result-container"></div>
+            <div id="versus-result-container"></div>
 
-            <div style="text-align:center; font-family:var(--font-mono); font-size:0.8rem; margin-top:20px; margin-bottom:10px; color:#888;">GOAL: <span id="multi-goal-val" style="color:#fff; font-weight:bold;">5</span></div>
+            <div style="text-align:center; font-family:var(--font-mono); font-size:0.8rem; margin-top:20px; margin-bottom:10px; color:#888;">GOAL: <span id="versus-goal-val" style="color:#fff; font-weight:bold;">5</span></div>
 
-            <div class="multi-compare-wrapper">
-                <div class="multi-compare-target">
-                    <p class="multi-compare-label" style="color:#fff; font-size:0.9rem;">TARGET</p>
-                    <div id="multi-ans-color" class="mini-box large-target-box"></div>
-                    <span id="multi-ans-text" class="rgb-value-text"></span>
+            <div class="versus-compare-wrapper">
+                <div class="versus-compare-target">
+                    <p class="versus-compare-label" style="color:#fff; font-size:0.9rem;">TARGET</p>
+                    <div id="versus-ans-color" class="mini-box large-target-box"></div>
+                    <span id="versus-ans-text" class="rgb-value-text"></span>
                 </div>
-                <div id="multi-players-compare" class="multi-players-wrapper"></div>
+                <div id="versus-players-compare" class="versus-players-wrapper"></div>
             </div>
 
             <div class="modal-buttons">
-                <button id="multi-continue-btn" onclick="multiGame.voteContinue()" class="btn-primary">CONTINUE</button>
-                <button onclick="multiGame.confirmExit()" class="btn-text">Exit Room</button>
+                <button id="versus-continue-btn" onclick="versusGame.voteContinue()" class="btn-primary">CONTINUE</button>
+                <button onclick="versusGame.confirmExit()" class="btn-text">Exit Room</button>
             </div>
-            <p id="multi-continue-status" style="color:#888; font-size:0.8rem; margin-top:-10px; min-height:1.2em;"></p>
+            <p id="versus-continue-status" style="color:#888; font-size:0.8rem; margin-top:-10px; min-height:1.2em;"></p>
         </section>
 
     </main>
@@ -384,6 +377,8 @@
     <footer class="app-footer">
         <div class="copyright" onclick="app.triggerSecret()">&copy; 2023-2025 Takutonkatsu</div>
     </footer>
+    
+    <canvas id="share-canvas" width="600" height="400" style="display:none;"></canvas>
 
     <div id="custom-alert-modal" class="custom-modal-overlay hidden">
         <div class="custom-modal-box">
