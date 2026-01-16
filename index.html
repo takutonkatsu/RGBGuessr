@@ -139,11 +139,13 @@
         </section>
 
         <section id="screen-result-daily" class="screen fade-in result-screen daily-result-bg">
-            <div class="daily-res-header">
-                <span class="daily-res-label">DAILY CHALLENGE</span>
-                <span id="daily-res-date" class="daily-res-date">202X.XX.XX</span>
+            <div class="game-header" style="margin-bottom:20px;">
+                <h2 class="game-title color-daily">Daily Color</h2>
+                <div class="daily-res-date" id="daily-res-date" style="font-size:1rem;">202X.XX.XX</div>
             </div>
+
             <div class="score-display"><span class="score-label">SCORE</span><h1 id="daily-score">0%</h1></div>
+            
             <div class="daily-compare-container">
                 <div class="daily-color-block">
                     <p class="compare-label">TARGET</p>
@@ -156,11 +158,15 @@
                     <span id="daily-your-text" class="daily-rgb-text">0, 0, 0</span>
                 </div>
             </div>
+            
             <div style="text-align:center; margin-bottom:30px; margin-top:20px; color:rgba(255,255,255,0.7); font-size:0.9rem;">
                 Next Color in: <span id="daily-next-timer" style="color:#fff; font-family:var(--font-mono); font-weight:bold;">--:--:--</span>
             </div>
+
             <div class="modal-buttons">
-                <button onclick="dailyGame.shareResult()" class="btn-primary" style="background: linear-gradient(135deg, #1DA1F2, #0077b5);">SHARE IMAGE</button>
+                <button onclick="dailyGame.shareResult()" class="btn-share">
+                    <span class="share-icon">📤</span> SHARE RESULT
+                </button>
                 <button onclick="app.backToMenu()" class="btn-text">BACK TO MENU</button>
             </div>
         </section>
@@ -188,7 +194,8 @@
         </section>
 
         <section id="screen-result-rush" class="screen fade-in result-screen">
-            <h2 class="result-page-title">RUSH RESULT</h2>
+            <div class="game-header"><h2 class="game-title color-rush">Rush</h2></div>
+            
             <div id="rush-new-record" class="new-record hidden">NEW HIGH SCORE!</div>
             <div class="score-display"><span class="score-label">TOTAL SCORE</span><h1 id="rush-final-score">0</h1></div>
             <div class="stats-row">
@@ -214,7 +221,8 @@
         </section>
 
         <section id="screen-result-origin" class="screen fade-in result-screen">
-            <h2 class="result-page-title">ORIGIN RESULT</h2>
+            <div class="game-header"><h2 class="game-title color-origin">Origin</h2></div>
+            
             <div id="origin-new-record" class="new-record hidden">NEW RECORD!</div>
             <div class="score-display"><span class="score-label">SCORE</span><h1 id="origin-score">0%</h1></div>
             <div class="compare-row">
@@ -222,12 +230,14 @@
                 <div class="compare-item"><p class="compare-label">YOU</p><div id="origin-your-color" class="mini-box"></div><span id="origin-your-text"></span></div>
             </div>
             <div class="stats-row">
-                <div class="stat-box"><span class="stat-label">Personal Best</span><span id="origin-pb" class="stat-value highlight">--</span></div>
-                <div class="stat-box"><span class="stat-label">Ao5</span><span id="origin-ao5" class="stat-value">--</span></div>
+                <div class="stat-box"><span class="stat-label">BEST</span><span id="origin-pb" class="stat-value highlight">--</span></div>
+                <div class="stat-box"><span class="stat-label">AO5 BEST</span><span id="origin-ao5" class="stat-value">--</span></div>
             </div>
             <div class="modal-buttons">
                 <button onclick="originGame.nextColor()" class="btn-primary">NEXT COLOR</button>
-                <button onclick="originGame.shareResult()" class="btn-primary" style="background: linear-gradient(135deg, #1DA1F2, #0077b5); font-size:0.9rem; padding:10px;">SHARE IMAGE</button>
+                <button onclick="originGame.shareResult()" class="btn-share">
+                    <span class="share-icon">📤</span> SHARE RESULT
+                </button>
                 <button onclick="app.backToMenu()" class="btn-text">Menu</button>
                 <button onclick="originGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
             </div>
@@ -252,7 +262,8 @@
         </section>
 
         <section id="screen-result-survival" class="screen fade-in result-screen">
-            <h2 class="result-page-title">SURVIVAL RESULT</h2>
+            <div class="game-header"><h2 class="game-title color-survival">Survival</h2></div>
+            
             <div id="survival-new-record" class="new-record hidden">MAX STAGE UPDATED!</div>
             <h1 id="survival-score-text" style="font-size:3rem; margin:10px 0;">Clear!</h1>
             <div class="result-score-block">
@@ -272,6 +283,7 @@
             </div>
             <div class="modal-buttons">
                 <button id="survival-next-btn" class="btn-primary">NEXT STAGE</button>
+                <button onclick="app.backToMenu()" class="btn-text">Menu</button>
                 <button onclick="survivalGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset</button>
             </div>
             <div id="survival-history" class="history-log"></div>
@@ -351,6 +363,8 @@
         </section>
 
         <section id="screen-versus-result" class="screen fade-in result-screen">
+            <div class="game-header"><h2 class="game-title color-versus">Versus</h2></div>
+            
             <h2 id="versus-result-title" class="result-title-style">ROUND WINNER!</h2>
             <div id="versus-final-winner" class="hidden winner-declare"></div>
             
@@ -364,7 +378,7 @@
                     <div id="versus-ans-color" class="mini-box large-target-box"></div>
                     <span id="versus-ans-text" class="rgb-value-text"></span>
                 </div>
-                <div id="versus-players-compare" class="multi-players-wrapper"></div>
+                <div id="versus-players-compare" class="versus-players-wrapper"></div>
             </div>
 
             <div class="modal-buttons">

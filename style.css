@@ -258,3 +258,37 @@ body { margin: 0; padding: 0; font-family: var(--font-ui); background-color: var
 .logo-rank-gold { background: linear-gradient(to right, #f7971e, #ffd200) !important; background-clip: text !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 0 25px rgba(255, 210, 0, 0.6); }
 .logo-rank-rainbow { background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000) !important; background-size: 400% 100% !important; background-clip: text !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; animation: rainbow-text 3s linear infinite; text-shadow: 0 0 30px rgba(255, 255, 255, 0.4); }
 @keyframes rainbow-text { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+
+/* ... (既存スタイル) ... */
+
+/* Share Button Style */
+.btn-share {
+    background: linear-gradient(135deg, #1DA1F2, #0077b5);
+    color: #fff;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(29, 161, 242, 0.4);
+}
+
+.btn-share:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(29, 161, 242, 0.6);
+}
+
+.btn-share:active {
+    transform: scale(0.98);
+}
+
+.share-icon {
+    font-size: 1.2rem;
+}

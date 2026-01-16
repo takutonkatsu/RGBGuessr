@@ -227,8 +227,11 @@ const menuLogic = {
 
 // ▼ Game Modes
 
-// Origin Mode (Fixed ID: origin-history)
+// Origin Mode (Updated Share)
 const originGame = {
+    // ... (init, retry, nextColor, guess, showResult, updateHistory, resetData は既存のまま) ...
+    // ※ 既存のメソッドはそのまま使用してください
+
     questionColor: {},
     init: function() {
         this.els = { R: document.getElementById('origin-R'), G: document.getElementById('origin-G'), B: document.getElementById('origin-B'), valR: document.getElementById('origin-val-R'), valG: document.getElementById('origin-val-G'), valB: document.getElementById('origin-val-B'), qColor: document.getElementById('origin-question-color') };
@@ -289,7 +292,6 @@ const originGame = {
             if(Number(sc) === pb && pb > 0) { rowClass += " best-record"; indexHtml = `<span class="history-index">👑</span>`; }
             html += `<div class="${rowClass}">${indexHtml}<div class="history-colors"><div class="color-row"><span class="label-box" style="color:#aaa">TARGET</span><span class="chip-xs" style="background:${ansHex}"></span><span>${ansTxt}</span></div><div class="color-row"><span class="label-box" style="color:#fff">YOU</span><span class="chip-xs" style="background:${myHex}"></span><span>${myTxt}</span></div></div><div class="history-right"><div class="history-score-val">${sc}%</div>${ao5Html}</div></div>`;
         }
-        // ★修正: 正しいIDを指定
         document.getElementById('origin-history').innerHTML = html;
         document.getElementById('origin-pb').innerText = (pb ? pb.toFixed(2) : "--") + "%"; 
         document.getElementById('origin-ao5').innerText = (bestAo5 ? bestAo5.toFixed(2) : "--") + "%";
@@ -297,7 +299,8 @@ const originGame = {
     resetData: function() { 
         app.confirm("Originモードの記録を削除しますか？", (y)=>{ if(y){ const keys = Object.keys(localStorage); keys.forEach(k => { if (k === "index" || k.startsWith("score") || k.startsWith("answer_") || k.startsWith("input_") || k.startsWith("Ao5")) { localStorage.removeItem(k); } }); localStorage.removeItem("my_1record"); localStorage.removeItem("my_ao5record"); localStorage.removeItem("RGB_Temporary_Hex"); location.reload(); } }) 
     },
-    // ★追加: Share Image Function
+
+    // ★修正: Canvas描画ロジックの改善
     shareResult: function() {
         const canvas = document.getElementById('share-canvas');
         const ctx = canvas.getContext('2d');
@@ -312,34 +315,49 @@ const originGame = {
         const b = document.getElementById('origin-B').value;
         const inputHex = utils.rgbToHex(Number(r), Number(g), Number(b));
 
+        // Background
         const grad = ctx.createLinearGradient(0, 0, 600, 400);
         grad.addColorStop(0, '#1a1a2e'); grad.addColorStop(1, '#16213e');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, 600, 400);
 
+        // Icon
         const img = document.getElementById('source-logo-icon');
-        if (img && img.complete) { ctx.drawImage(img, 30, 30, 50, 50); }
-        ctx.font = '900 40px "Inter", sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText("RETINA", 100, 70);
+        if (img && img.complete) { ctx.drawImage(img, 25, 25, 50, 50); }
+        
+        // Header
+        ctx.font = '900 32px "Inter", sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText("RETINA", 90, 65);
+        ctx.font = '700 16px "JetBrains Mono", monospace'; ctx.fillStyle = '#ff4757'; ctx.fillText("ORIGIN MODE", 450, 65);
 
-        ctx.font = '700 20px "JetBrains Mono", monospace'; ctx.fillStyle = '#ff4757'; ctx.fillText("ORIGIN MODE", 30, 130);
-        ctx.fillStyle = '#ffffff'; ctx.fillText(`Attempt #${count} | Ao5: ${ao5}`, 30, 160);
+        // Info Line
+        ctx.beginPath(); ctx.moveTo(30, 90); ctx.lineTo(570, 90); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.font = '16px "JetBrains Mono", monospace'; ctx.fillStyle = '#aaa'; ctx.textAlign = 'left'; ctx.fillText(`Try #${count}`, 30, 120);
+        ctx.textAlign = 'right'; ctx.fillText(`AO5 Best: ${ao5}`, 570, 120);
 
-        ctx.font = '900 80px "Inter", sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = '#ffffff'; ctx.fillText(score, 570, 150);
-        ctx.font = '20px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.fillText("SCORE", 570, 80);
-
-        const drawCircle = (x, y, color, label) => {
-            ctx.font = 'bold 16px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 60);
-            ctx.beginPath(); ctx.arc(x, y, 50, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+        // Score
+        ctx.font = '900 90px "Inter", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff'; ctx.fillText(score, 300, 220);
+        
+        // Colors
+        const drawColor = (x, y, color, label) => {
+            // Label
+            ctx.font = 'bold 14px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 55);
+            // Circle
+            ctx.save();
+            ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
             ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke();
+            ctx.restore();
+            // Hex text
+            ctx.font = '14px "JetBrains Mono", monospace'; ctx.fillStyle = '#fff'; ctx.fillText(color.toUpperCase(), x, y + 60);
         };
+        drawColor(200, 310, targetHex, "TARGET");
+        drawColor(400, 310, inputHex, "YOU");
 
-        drawCircle(200, 280, targetHex, "TARGET"); drawCircle(400, 280, inputHex, "YOU");
-
-        ctx.font = '14px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.textAlign = 'center'; ctx.fillText("rgb-guessr.web.app", 300, 380);
+        // Footer
+        ctx.font = '12px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'center'; ctx.fillText("rgb-guessr.web.app", 300, 385);
 
         canvas.toBlob(blob => {
             const file = new File([blob], "retina_origin.png", { type: "image/png" });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                navigator.share({ files: [file], title: 'Retina Origin Result', text: `Retina Origin Mode #${count} | Score: ${score}` }).catch(console.error);
+                navigator.share({ files: [file], title: 'Retina Result', text: `Retina - Origin Mode #${count} | Score: ${score}` }).catch(console.error);
             } else {
                 const link = document.createElement('a'); link.download = `retina_origin_${count}.png`; link.href = canvas.toDataURL(); link.click();
             }
@@ -539,14 +557,16 @@ const anotherGame = {
     }
 };
 
-// ▼ Daily Game Logic
+// Daily Game Mode (Updated Share)
 const dailyGame = {
+    // ... (init, guess, showResult, startTimer, resetData は既存のまま) ...
+
     targetColor: {}, dateStr: "", timerInterval: null, els:{},
     init: function() {
         if(this.timerInterval) clearInterval(this.timerInterval);
         this.els = { R: document.getElementById('daily-R'), G: document.getElementById('daily-G'), B: document.getElementById('daily-B'), valR: document.getElementById('daily-val-R'), valG: document.getElementById('daily-val-G'), valB: document.getElementById('daily-val-B'), qColor: document.getElementById('daily-question-color') };
         
-        // ★修正: リスナー登録を確実に行う
+        // Ensure listener is added
         const guessBtn = document.getElementById('daily-guess-btn');
         if(guessBtn) guessBtn.onclick = () => this.guess();
 
@@ -605,6 +625,7 @@ const dailyGame = {
         this.timerInterval = setInterval(updateTimer, 1000);
     },
 
+    // ★修正: Canvas描画ロジックの改善 (Originとデザイン統一)
     shareResult: function() {
         const canvas = document.getElementById('share-canvas');
         const ctx = canvas.getContext('2d');
@@ -613,41 +634,51 @@ const dailyGame = {
         const targetHex = this.targetColor.hex;
         const savedInputHex = localStorage.getItem("daily_input_hex_" + this.dateStr) || "#000000";
         
+        // Background
         const grad = ctx.createLinearGradient(0, 0, 600, 400);
         grad.addColorStop(0, '#1a1a2e'); grad.addColorStop(1, '#16213e');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, 600, 400);
 
+        // Icon
         const img = document.getElementById('source-logo-icon');
-        if (img && img.complete) { ctx.drawImage(img, 30, 30, 50, 50); }
-        ctx.font = '900 40px "Inter", sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText("RETINA", 100, 70);
+        if (img && img.complete) { ctx.drawImage(img, 25, 25, 50, 50); }
+        
+        // Header
+        ctx.font = '900 32px "Inter", sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText("RETINA", 90, 65);
+        ctx.font = '700 16px "JetBrains Mono", monospace'; ctx.fillStyle = '#ffd700'; ctx.fillText("DAILY CHALLENGE", 420, 65);
 
-        ctx.font = '700 20px "JetBrains Mono", monospace'; ctx.fillStyle = '#ffd700'; ctx.fillText("DAILY CHALLENGE", 30, 130);
-        ctx.fillStyle = '#ffffff'; ctx.fillText(dateText, 30, 160);
+        // Info Line
+        ctx.beginPath(); ctx.moveTo(30, 90); ctx.lineTo(570, 90); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.font = '16px "JetBrains Mono", monospace'; ctx.fillStyle = '#aaa'; ctx.textAlign = 'center'; ctx.fillText(dateText, 300, 120);
 
-        ctx.font = '900 80px "Inter", sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = '#ffffff'; ctx.fillText(score, 570, 150);
-        ctx.font = '20px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.fillText("SCORE", 570, 80);
-
-        const drawCircle = (x, y, color, label) => {
-            ctx.font = 'bold 16px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 60);
-            ctx.beginPath(); ctx.arc(x, y, 50, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+        // Score
+        ctx.font = '900 90px "Inter", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff'; ctx.fillText(score, 300, 220);
+        
+        // Colors
+        const drawColor = (x, y, color, label) => {
+            ctx.font = 'bold 14px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 55);
+            ctx.save();
+            ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
             ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke();
+            ctx.restore();
+            ctx.font = '14px "JetBrains Mono", monospace'; ctx.fillStyle = '#fff'; ctx.fillText(color.toUpperCase(), x, y + 60);
         };
+        drawColor(200, 310, targetHex, "TARGET");
+        drawColor(400, 310, savedInputHex, "YOU");
 
-        drawCircle(200, 280, targetHex, "TARGET"); drawCircle(400, 280, savedInputHex, "YOU");
-
-        ctx.font = '14px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.textAlign = 'center'; ctx.fillText("rgb-guessr.web.app", 300, 380);
+        // Footer
+        ctx.font = '12px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'center'; ctx.fillText("rgb-guessr.web.app", 300, 385);
 
         canvas.toBlob(blob => {
             const file = new File([blob], "retina_daily.png", { type: "image/png" });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                navigator.share({ files: [file], title: 'Retina Daily Result', text: `Daily Color Challenge ${dateText} | Score: ${score}` }).catch(console.error);
+                navigator.share({ files: [file], title: 'Retina Daily Result', text: `Retina - Daily Color Challenge ${dateText} | Score: ${score}` }).catch(console.error);
             } else {
                 const link = document.createElement('a'); link.download = `retina_daily_${dateText}.png`; link.href = canvas.toDataURL(); link.click();
             }
         });
     }
 };
-
 // ... (Firebase Config, app, utils, menuLogic, originGame, rushGame, survivalGame, anotherGame, dailyGame are unchanged) ...
 // ※ここでは省略していますが、必ず前回のコードを使用してください。
 
