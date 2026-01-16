@@ -68,6 +68,7 @@ const app = {
             versusGame.confirmExit();
         } else {
             if (dailyGame.timerInterval) clearInterval(dailyGame.timerInterval);
+            if (rushGame && rushGame.timerInterval) clearInterval(rushGame.timerInterval); // ★追加
             this.showScreen('menu');
         }
     },
@@ -226,7 +227,7 @@ const menuLogic = {
 
 // ▼ Game Modes
 
-// Origin Mode (formerly Original)
+// Origin Mode (Fixed ID: origin-history)
 const originGame = {
     questionColor: {},
     init: function() {
@@ -288,19 +289,61 @@ const originGame = {
             if(Number(sc) === pb && pb > 0) { rowClass += " best-record"; indexHtml = `<span class="history-index">👑</span>`; }
             html += `<div class="${rowClass}">${indexHtml}<div class="history-colors"><div class="color-row"><span class="label-box" style="color:#aaa">TARGET</span><span class="chip-xs" style="background:${ansHex}"></span><span>${ansTxt}</span></div><div class="color-row"><span class="label-box" style="color:#fff">YOU</span><span class="chip-xs" style="background:${myHex}"></span><span>${myTxt}</span></div></div><div class="history-right"><div class="history-score-val">${sc}%</div>${ao5Html}</div></div>`;
         }
-        document.getElementById('original-history').innerHTML = html;
+        // ★修正: 正しいIDを指定
+        document.getElementById('origin-history').innerHTML = html;
         document.getElementById('origin-pb').innerText = (pb ? pb.toFixed(2) : "--") + "%"; 
         document.getElementById('origin-ao5').innerText = (bestAo5 ? bestAo5.toFixed(2) : "--") + "%";
     },
     resetData: function() { 
-        app.confirm("Originモードの記録を削除しますか？", (y)=>{ 
-            if(y){ 
-                const keys = Object.keys(localStorage);
-                keys.forEach(k => { if (k === "index" || k.startsWith("score") || k.startsWith("answer_") || k.startsWith("input_") || k.startsWith("Ao5")) { localStorage.removeItem(k); } });
-                localStorage.removeItem("my_1record"); localStorage.removeItem("my_ao5record"); localStorage.removeItem("RGB_Temporary_Hex");
-                location.reload(); 
-            } 
-        }) 
+        app.confirm("Originモードの記録を削除しますか？", (y)=>{ if(y){ const keys = Object.keys(localStorage); keys.forEach(k => { if (k === "index" || k.startsWith("score") || k.startsWith("answer_") || k.startsWith("input_") || k.startsWith("Ao5")) { localStorage.removeItem(k); } }); localStorage.removeItem("my_1record"); localStorage.removeItem("my_ao5record"); localStorage.removeItem("RGB_Temporary_Hex"); location.reload(); } }) 
+    },
+    // ★追加: Share Image Function
+    shareResult: function() {
+        const canvas = document.getElementById('share-canvas');
+        const ctx = canvas.getContext('2d');
+        const score = document.getElementById('origin-score').innerText;
+        const ao5 = document.getElementById('origin-ao5').innerText;
+        const val = Number(localStorage.getItem("index")) || 1;
+        const count = val - 1; // 直前のプレイ回数
+        const targetHex = this.questionColor.hex;
+        // 入力色は保存されていないため、画面から取得
+        const r = document.getElementById('origin-R').value;
+        const g = document.getElementById('origin-G').value;
+        const b = document.getElementById('origin-B').value;
+        const inputHex = utils.rgbToHex(Number(r), Number(g), Number(b));
+
+        const grad = ctx.createLinearGradient(0, 0, 600, 400);
+        grad.addColorStop(0, '#1a1a2e'); grad.addColorStop(1, '#16213e');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, 600, 400);
+
+        const img = document.getElementById('source-logo-icon');
+        if (img && img.complete) { ctx.drawImage(img, 30, 30, 50, 50); }
+        ctx.font = '900 40px "Inter", sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText("RETINA", 100, 70);
+
+        ctx.font = '700 20px "JetBrains Mono", monospace'; ctx.fillStyle = '#ff4757'; ctx.fillText("ORIGIN MODE", 30, 130);
+        ctx.fillStyle = '#ffffff'; ctx.fillText(`Attempt #${count} | Ao5: ${ao5}`, 30, 160);
+
+        ctx.font = '900 80px "Inter", sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = '#ffffff'; ctx.fillText(score, 570, 150);
+        ctx.font = '20px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.fillText("SCORE", 570, 80);
+
+        const drawCircle = (x, y, color, label) => {
+            ctx.font = 'bold 16px sans-serif'; ctx.fillStyle = '#8b9bb4'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 60);
+            ctx.beginPath(); ctx.arc(x, y, 50, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+            ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke();
+        };
+
+        drawCircle(200, 280, targetHex, "TARGET"); drawCircle(400, 280, inputHex, "YOU");
+
+        ctx.font = '14px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.textAlign = 'center'; ctx.fillText("rgb-guessr.web.app", 300, 380);
+
+        canvas.toBlob(blob => {
+            const file = new File([blob], "retina_origin.png", { type: "image/png" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({ files: [file], title: 'Retina Origin Result', text: `Retina Origin Mode #${count} | Score: ${score}` }).catch(console.error);
+            } else {
+                const link = document.createElement('a'); link.download = `retina_origin_${count}.png`; link.href = canvas.toDataURL(); link.click();
+            }
+        });
     }
 };
 
@@ -605,7 +648,10 @@ const dailyGame = {
     }
 };
 
-// ▼ 6. VERSUS MODE (Unified 2-4 Players)
+// ... (Firebase Config, app, utils, menuLogic, originGame, rushGame, survivalGame, anotherGame, dailyGame are unchanged) ...
+// ※ここでは省略していますが、必ず前回のコードを使用してください。
+
+// ▼ 6. VERSUS MODE (Unified 2-4 Players) - FIXED Lobby
 const versusGame = {
     roomId: null, role: null, roomRef: null,
     myName: "Player", currentRound: 0, 
@@ -624,7 +670,10 @@ const versusGame = {
         this.roomRef = db.ref('rooms_versus/' + this.roomId);
         
         this.roomRef.set({
-            state: 'waiting', question: utils.randColor(), round: 1, maxWins: maxWins, 
+            state: 'waiting', 
+            question: utils.randColor(), 
+            round: 1,
+            maxWins: maxWins, 
             players: {
                 p1: { name: this.myName, score: 0, status: 'waiting' },
                 p2: { name: '', score: 0, status: 'empty' },
@@ -709,17 +758,17 @@ const versusGame = {
             const goalText = (data.maxWins > 0) ? `First to ${data.maxWins} Wins` : "Endless Mode";
             document.getElementById('versus-lobby-goal').innerText = `GOAL: ${goalText}`;
 
+            // ★修正: シンプルなテキストリスト更新
             ['p1', 'p2', 'p3', 'p4'].forEach((key, i) => {
-                const slotEl = document.getElementById(`lobby-slot-${i+1}`);
+                const el = document.getElementById(`versus-${key}-name`);
                 const p = data.players[key];
+                let label = (i === 0) ? "Host" : `Guest ${i}`;
                 if (p.status !== 'empty') {
-                    slotEl.classList.add('slot-filled');
-                    slotEl.querySelector('.slot-name').innerText = p.name;
-                    slotEl.querySelector('.slot-status').innerText = (key === 'p1') ? 'HOST' : 'READY';
+                    el.innerText = `${label}: ${p.name}`;
+                    el.style.color = "#fff";
                 } else {
-                    slotEl.classList.remove('slot-filled');
-                    slotEl.querySelector('.slot-name').innerText = "Empty";
-                    slotEl.querySelector('.slot-status').innerText = "Waiting...";
+                    el.innerText = `${label}: ---`;
+                    el.style.color = "#666";
                 }
             });
 
@@ -768,58 +817,37 @@ const versusGame = {
         });
     },
 
-    hostStartGame: function() {
-        this.roomRef.update({ state: 'playing' });
-    },
+    // ... (hostStartGame, startRound, updateColor, submitGuess, calcResult, showResult, voteContinue, nextRound, confirmExit, exitRoom は前回のまま) ...
+    // ※文字数制限のため省略。前回のコードをそのまま使用してください。
+    
+    hostStartGame: function() { this.roomRef.update({ state: 'playing' }); },
 
     startRound: function(data) {
         if (this.currentRound === data.round && document.getElementById('screen-versus-battle').classList.contains('active')) return;
-        
         app.showScreen('versus-battle');
         document.getElementById('versus-wait-msg').classList.add('hidden');
         document.getElementById('versus-guess-btn').classList.remove('hidden');
-
         const update = () => this.updateColor();
-        document.getElementById('versus-R').oninput = update;
-        document.getElementById('versus-G').oninput = update;
-        document.getElementById('versus-B').oninput = update;
-
+        document.getElementById('versus-R').oninput = update; document.getElementById('versus-G').oninput = update; document.getElementById('versus-B').oninput = update;
         this.currentRound = data.round;
         const q = data.question;
-        document.getElementById('versus-R').value = 128; 
-        document.getElementById('versus-G').value = 128; 
-        document.getElementById('versus-B').value = 128;
+        document.getElementById('versus-R').value = 128; document.getElementById('versus-G').value = 128; document.getElementById('versus-B').value = 128;
         this.updateColor();
         document.getElementById('versus-round-display').innerText = "Round " + data.round;
         document.getElementById('versus-question-color').style.backgroundColor = q.hex; 
     },
-
     updateColor: function() {
-        const r = document.getElementById('versus-R').value; 
-        const g = document.getElementById('versus-G').value; 
-        const b = document.getElementById('versus-B').value;
-        document.getElementById('versus-val-R').innerText = r; 
-        document.getElementById('versus-val-G').innerText = g; 
-        document.getElementById('versus-val-B').innerText = b;
+        const r = document.getElementById('versus-R').value; const g = document.getElementById('versus-G').value; const b = document.getElementById('versus-B').value;
+        document.getElementById('versus-val-R').innerText = r; document.getElementById('versus-val-G').innerText = g; document.getElementById('versus-val-B').innerText = b;
     },
-
     submitGuess: function() {
-        const r = parseInt(document.getElementById('versus-R').value); 
-        const g = parseInt(document.getElementById('versus-G').value); 
-        const b = parseInt(document.getElementById('versus-B').value);
-        this.roomRef.child(`players/${this.role}`).update({ 
-            color: {r, g, b, hex: utils.rgbToHex(r,g,b)}, 
-            status: 'guessed' 
-        });
+        const r = parseInt(document.getElementById('versus-R').value); const g = parseInt(document.getElementById('versus-G').value); const b = parseInt(document.getElementById('versus-B').value);
+        this.roomRef.child(`players/${this.role}`).update({ color: {r, g, b, hex: utils.rgbToHex(r,g,b)}, status: 'guessed' });
         document.getElementById('versus-guess-btn').classList.add('hidden');
         document.getElementById('versus-wait-msg').classList.remove('hidden');
     },
-
     calcResult: function(data) {
-        const q = data.question;
-        let updates = {};
-        let scores = [];
-
+        const q = data.question; let updates = {}; let scores = [];
         Object.keys(data.players).forEach(key => {
             const p = data.players[key];
             if (p.status !== 'empty') {
@@ -828,199 +856,64 @@ const versusGame = {
                 updates[`players/${key}/lastScore`] = roundScore.toFixed(2);
             }
         });
-
         if (scores.length > 0) {
-            scores.sort((a, b) => b.score - a.score);
-            const maxScore = scores[0].score;
-            scores.forEach(s => {
-                if (s.score === maxScore) {
-                    const currentWins = data.players[s.key].score || 0; 
-                    updates[`players/${s.key}/score`] = currentWins + 1;
-                }
-            });
+            scores.sort((a, b) => b.score - a.score); const maxScore = scores[0].score;
+            scores.forEach(s => { if (s.score === maxScore) { const currentWins = data.players[s.key].score || 0; updates[`players/${s.key}/score`] = currentWins + 1; } });
         }
-
         updates['state'] = 'finished';
         this.roomRef.update(updates);
     },
-
     showResult: function(data) {
-        if(!document.getElementById('screen-versus-result').classList.contains('active')) {
-            app.showScreen('versus-result');
-        }
-
-        const q = data.question;
-        const myKey = this.role;
-        
+        if(!document.getElementById('screen-versus-result').classList.contains('active')) { app.showScreen('versus-result'); }
+        const q = data.question; const myKey = this.role;
         let activePlayers = [];
         Object.keys(data.players).forEach(key => {
             const p = data.players[key];
             if (p.status !== 'empty') {
-                activePlayers.push({ 
-                    key: key, 
-                    name: p.name, 
-                    score: p.lastScore || "0.00", 
-                    wins: p.score, 
-                    color: p.color || {r:0,g:0,b:0,hex:'#000'},
-                    me: (key === myKey)
-                });
+                activePlayers.push({ key: key, name: p.name, score: p.lastScore || "0.00", wins: p.score, color: p.color || {r:0,g:0,b:0,hex:'#000'}, me: (key === myKey) });
             }
         });
-
         activePlayers.sort((a, b) => Number(b.score) - Number(a.score));
-
         const resultContainer = document.getElementById('versus-result-container');
         let html = `<div class="res-grid-container players-${activePlayers.length}">`;
-        
         activePlayers.forEach((p, idx) => {
             let rankClass = idx === 0 ? 'rank-1st' : (idx === 1 ? 'rank-2nd' : (idx === 2 ? 'rank-3rd' : ''));
             let rankText = idx === 0 ? '1st' : (idx === 1 ? '2nd' : (idx === 2 ? '3rd' : (idx+1)+'th'));
-            
-            html += `
-                <div class="res-grid-box">
-                    <span class="res-grid-rank ${rankClass}">${rankText}</span>
-                    <span class="res-grid-score">${p.score}%</span>
-                    <span class="res-grid-name">${p.name}</span>
-                    ${p.me ? '<span class="res-you-badge">(YOU)</span>' : ''}
-                    <div class="res-win-badge">
-                        <span style="font-size:0.7rem; color:#aaa;">WINS</span>
-                        <span style="font-size:1.2rem; color:#fff; font-weight:bold;">${p.wins}</span>
-                    </div>
-                </div>`;
+            html += `<div class="res-grid-box"><span class="res-grid-rank ${rankClass}">${rankText}</span><span class="res-grid-score">${p.score}%</span><span class="res-grid-name">${p.name}</span>${p.me ? '<span class="res-you-badge">(YOU)</span>' : ''}<div class="res-win-badge"><span style="font-size:0.7rem; color:#aaa;">WINS</span><span style="font-size:1.2rem; color:#fff; font-weight:bold;">${p.wins}</span></div></div>`;
         });
         html += '</div>';
         resultContainer.innerHTML = html;
-
         const title = document.getElementById('versus-result-title');
         const myRank = activePlayers.findIndex(p => p.me);
-        
-        if (myRank === 0) {
-            title.innerText = "WINNER!";
-            title.style.color = "var(--accent-gold)";
-        } else if (myRank === 1) {
-            title.innerText = "2nd PLACE";
-            title.style.color = "#c0c0c0";
-        } else if (myRank === 2) {
-            title.innerText = "3rd PLACE";
-            title.style.color = "#cd7f32";
-        } else {
-            title.innerText = (myRank + 1) + "th PLACE";
-            title.style.color = "#fff";
-        }
-
+        if (myRank === 0) { title.innerText = "WINNER!"; title.style.color = "var(--accent-gold)"; } else if (myRank === 1) { title.innerText = "2nd PLACE"; title.style.color = "#c0c0c0"; } else if (myRank === 2) { title.innerText = "3rd PLACE"; title.style.color = "#cd7f32"; } else { title.innerText = (myRank + 1) + "th PLACE"; title.style.color = "#fff"; }
         const goal = data.maxWins || 5;
         document.getElementById('versus-goal-val').innerText = (goal > 0) ? goal : "∞";
-
-        document.getElementById('versus-ans-color').style.backgroundColor = q.hex;
-        document.getElementById('versus-ans-text').innerText = `${q.r}, ${q.g}, ${q.b}`;
-
+        document.getElementById('versus-ans-color').style.backgroundColor = q.hex; document.getElementById('versus-ans-text').innerText = `${q.r}, ${q.g}, ${q.b}`;
         const playersCompContainer = document.getElementById('versus-players-compare');
-        
-        if (activePlayers.length === 4) {
-            playersCompContainer.className = "multi-players-wrapper grid-2x2";
-        } else {
-            playersCompContainer.className = "multi-players-wrapper flex-row";
-        }
-
-        let compareHtml = '';
-        let sortedByKey = [...activePlayers].sort((a, b) => a.key.localeCompare(b.key));
-        
-        sortedByKey.forEach(p => {
-            compareHtml += `
-                <div class="multi-compare-item">
-                    <p class="multi-compare-label">${p.name}</p>
-                    <div class="mini-box" style="background:${p.color.hex}"></div>
-                    <span class="rgb-value-text">${p.color.r},${p.color.g},${p.color.b}</span>
-                </div>`;
-        });
+        if (activePlayers.length === 4) { playersCompContainer.className = "multi-players-wrapper grid-2x2"; } else { playersCompContainer.className = "multi-players-wrapper flex-row"; }
+        let compareHtml = ''; let sortedByKey = [...activePlayers].sort((a, b) => a.key.localeCompare(b.key));
+        sortedByKey.forEach(p => { compareHtml += `<div class="multi-compare-item"><p class="multi-compare-label">${p.name}</p><div class="mini-box" style="background:${p.color.hex}"></div><span class="rgb-value-text">${p.color.r},${p.color.g},${p.color.b}</span></div>`; });
         playersCompContainer.innerHTML = compareHtml;
-
-        let champion = null;
-        if (goal > 0) {
-            activePlayers.forEach(p => {
-                if (p.wins >= goal) champion = p.name;
-            });
-        }
-
-        const winDeclare = document.getElementById('versus-final-winner');
-        const btn = document.getElementById('versus-continue-btn');
-        const contMsg = document.getElementById('versus-continue-status');
-
+        let champion = null; if (goal > 0) { activePlayers.forEach(p => { if (p.wins >= goal) champion = p.name; }); }
+        const winDeclare = document.getElementById('versus-final-winner'); const btn = document.getElementById('versus-continue-btn'); const contMsg = document.getElementById('versus-continue-status');
         if (champion) {
-            winDeclare.classList.remove('hidden');
-            winDeclare.innerText = `🏆 ${champion} WINS THE GAME! 🏆`;
-            title.innerText = "GAME SET";
-            title.style.color = "#fff";
-            
-            btn.innerText = "RETURN TO MENU";
-            btn.disabled = false;
-            btn.style.background = "var(--primary-multi)";
-            btn.onclick = () => this.confirmExit();
-            contMsg.innerText = "Thanks for playing!";
+            winDeclare.classList.remove('hidden'); winDeclare.innerText = `🏆 ${champion} WINS THE GAME! 🏆`; title.innerText = "GAME SET"; title.style.color = "#fff";
+            btn.innerText = "RETURN TO MENU"; btn.disabled = false; btn.style.background = "var(--primary-multi)"; btn.onclick = () => this.confirmExit(); contMsg.innerText = "Thanks for playing!";
         } else {
-            winDeclare.classList.add('hidden');
-            btn.onclick = () => this.voteContinue();
-
-            if (data.players[this.role].status === 'ready') {
-                btn.disabled = true; btn.innerText = "WAITING..."; btn.style.background = "#555"; btn.style.opacity = "0.7";
-            } else {
-                btn.disabled = false; btn.innerText = "CONTINUE"; btn.style.background = "var(--primary-multi)"; btn.style.opacity = "1";
-            }
-
-            let readyCount = 0;
-            let totalActive = activePlayers.length;
-            activePlayers.forEach(p => {
-                if (data.players[p.key].status === 'ready') readyCount++;
-            });
-
-            if(readyCount === totalActive) contMsg.innerText = "Starting next round...";
-            else contMsg.innerText = `Waiting for players (${readyCount}/${totalActive} ready)...`;
-
-            if (this.role === 'p1' && readyCount === totalActive) {
-                this.nextRound(data.round + 1);
-            }
+            winDeclare.classList.add('hidden'); btn.onclick = () => this.voteContinue();
+            if (data.players[this.role].status === 'ready') { btn.disabled = true; btn.innerText = "WAITING..."; btn.style.background = "#555"; btn.style.opacity = "0.7"; } else { btn.disabled = false; btn.innerText = "CONTINUE"; btn.style.background = "var(--primary-multi)"; btn.style.opacity = "1"; }
+            let readyCount = 0; let totalActive = activePlayers.length; activePlayers.forEach(p => { if (data.players[p.key].status === 'ready') readyCount++; });
+            if(readyCount === totalActive) contMsg.innerText = "Starting next round..."; else contMsg.innerText = `Waiting for players (${readyCount}/${totalActive} ready)...`;
+            if (this.role === 'p1' && readyCount === totalActive) { this.nextRound(data.round + 1); }
         }
     },
-
-    voteContinue: function() {
-        const btn = document.getElementById('versus-continue-btn');
-        btn.disabled = true; btn.innerText = "WAITING..."; btn.style.background = "#555"; btn.style.opacity = "0.7";
-        this.roomRef.child(`players/${this.role}`).update({ status: 'ready' });
-    },
-
-    nextRound: function(nextRoundNum) {
-        this.roomRef.once('value').then(snap => {
-            const d = snap.val();
-            let updates = {};
-            updates['question'] = utils.randColor();
-            updates['round'] = nextRoundNum;
-            updates['state'] = 'playing';
-            
-            Object.keys(d.players).forEach(key => {
-                if (d.players[key].status !== 'empty') {
-                    updates[`players/${key}/status`] = 'thinking';
-                }
-            });
-            this.roomRef.update(updates);
-        });
-    },
-
+    voteContinue: function() { const btn = document.getElementById('versus-continue-btn'); btn.disabled = true; btn.innerText = "WAITING..."; btn.style.background = "#555"; btn.style.opacity = "0.7"; this.roomRef.child(`players/${this.role}`).update({ status: 'ready' }); },
+    nextRound: function(nextRoundNum) { this.roomRef.once('value').then(snap => { const d = snap.val(); let updates = {}; updates['question'] = utils.randColor(); updates['round'] = nextRoundNum; updates['state'] = 'playing'; Object.keys(d.players).forEach(key => { if (d.players[key].status !== 'empty') { updates[`players/${key}/status`] = 'thinking'; } }); this.roomRef.update(updates); }); },
     confirmExit: function() { app.confirm("Exit Multiplayer?", (y) => { if(y) this.exitRoom(); }); },
-    exitRoom: function(isPassive) { 
-        if(this.roomRef && !isPassive) { 
-            this.roomRef.off(); 
-            if (this.role) {
-                this.roomRef.child(`players/${this.role}`).update({ name: '', score: 0, status: 'empty' });
-            }
-        } 
-        this.roomId = null; 
-        app.showScreen('menu'); 
-    }
+    exitRoom: function(isPassive) { if(this.roomRef && !isPassive) { this.roomRef.off(); if (this.role) { this.roomRef.child(`players/${this.role}`).update({ name: '', score: 0, status: 'empty' }); } } this.roomId = null; app.showScreen('menu'); }
 };
 
-document.getElementById('versus-room-input').addEventListener('input', function(e) {
-    this.value = this.value.replace(/[^0-9]/g, '');
-});
+document.getElementById('versus-room-input').addEventListener('input', function(e) { this.value = this.value.replace(/[^0-9]/g, ''); });
 
 // ▼ Initialize App
 window.onload = function() {

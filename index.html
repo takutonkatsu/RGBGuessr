@@ -65,7 +65,7 @@
                     <div class="card-content">
                         <h3>Origin</h3>
                         <p>数値のみで挑む真剣勝負</p>
-                        <div class="record-badge" id="menu-origin-record">NO RECORD</div>
+                        <div class="record-badge" id="menu-original-record">NO RECORD</div>
                     </div>
                 </div>
 
@@ -199,7 +199,7 @@
             <div class="modal-buttons">
                 <button onclick="rushGame.init()" class="btn-primary">RETRY</button>
                 <button onclick="rushGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
-                </div>
+            </div>
         </section>
 
         <section id="screen-origin" class="screen fade-in">
@@ -227,6 +227,8 @@
             </div>
             <div class="modal-buttons">
                 <button onclick="originGame.nextColor()" class="btn-primary">NEXT COLOR</button>
+                <button onclick="originGame.shareResult()" class="btn-primary" style="background: linear-gradient(135deg, #1DA1F2, #0077b5); font-size:0.9rem; padding:10px;">SHARE IMAGE</button>
+                <button onclick="app.backToMenu()" class="btn-text">Menu</button>
                 <button onclick="originGame.resetData()" class="btn-text" style="font-size:0.7rem; color:#555;">Reset Data</button>
             </div>
             <div id="origin-history" class="history-log"></div>
@@ -322,11 +324,11 @@
             <div id="versus-room-id-display" class="room-id-display" style="color:var(--primary-multi);">----</div>
             <div id="versus-lobby-goal" style="color:#fff; font-family:var(--font-mono); margin-bottom:15px; font-weight:bold;">GOAL: ---</div>
             
-            <div class="versus-lobby-slots">
-                <div id="lobby-slot-1" class="versus-lobby-slot slot-filled"><span class="slot-name">---</span><span class="slot-status">HOST</span></div>
-                <div id="lobby-slot-2" class="versus-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
-                <div id="lobby-slot-3" class="versus-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
-                <div id="lobby-slot-4" class="versus-lobby-slot"><span class="slot-name">Empty</span><span class="slot-status">Waiting...</span></div>
+            <div style="margin-top:20px; font-size:1rem; color:#ddd; line-height:1.6;">
+                <p id="versus-p1-name" style="border-bottom:1px solid #333; padding:5px;">Host: ---</p>
+                <p id="versus-p2-name" style="border-bottom:1px solid #333; padding:5px;">Guest 1: ---</p>
+                <p id="versus-p3-name" style="border-bottom:1px solid #333; padding:5px;">Guest 2: ---</p>
+                <p id="versus-p4-name" style="border-bottom:1px solid #333; padding:5px;">Guest 3: ---</p>
             </div>
 
             <div id="host-start-area" class="hidden" style="margin-top:20px;">
@@ -356,13 +358,13 @@
 
             <div style="text-align:center; font-family:var(--font-mono); font-size:0.8rem; margin-top:20px; margin-bottom:10px; color:#888;">GOAL: <span id="versus-goal-val" style="color:#fff; font-weight:bold;">5</span></div>
 
-            <div class="versus-compare-wrapper">
-                <div class="versus-compare-target">
+            <div class="multi-compare-wrapper">
+                <div class="multi-compare-target">
                     <p class="versus-compare-label" style="color:#fff; font-size:0.9rem;">TARGET</p>
                     <div id="versus-ans-color" class="mini-box large-target-box"></div>
                     <span id="versus-ans-text" class="rgb-value-text"></span>
                 </div>
-                <div id="versus-players-compare" class="versus-players-wrapper"></div>
+                <div id="versus-players-compare" class="multi-players-wrapper"></div>
             </div>
 
             <div class="modal-buttons">
