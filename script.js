@@ -169,10 +169,12 @@ const menuLogic = {
         this.showDualRecord("my_1record", "my_ao5record", "menu-original-record");
         this.showDualRecord("rush_best", null, "menu-rush-record");
         
+        // ★修正: ID間違いを修正 (menu-challenge-record -> menu-survival-record)
         const stageRec = localStorage.getItem("4stage_record");
-        const stageElem = document.getElementById("menu-challenge-record");
+        const stageElem = document.getElementById("menu-survival-record");
         if(stageElem) { stageElem.innerHTML = stageRec ? `Max Stage: <span>${stageRec}</span>` : "Start: Stage 1"; }
 
+        // ... (ロゴとDaily Colorのロジックは既存のまま) ...
         const ao5Rec = Number(localStorage.getItem("my_ao5record")) || 0;
         const logoEl = document.getElementById("app-logo");
         const iconHtml = `<img src="Retina_icon.png" alt="icon" class="logo-icon" id="source-logo-icon">`;
@@ -185,7 +187,6 @@ const menuLogic = {
             else if (ao5Rec >= 98.00) rankClass = "logo-rank-purple";
             else if (ao5Rec >= 95.00) rankClass = "logo-rank-red";
             else if (ao5Rec >= 90.00) rankClass = "logo-rank-blue";
-            
             logoEl.innerHTML = `${iconHtml} <span class="logo-text ${rankClass}">RETINA</span>`;
         }
 
@@ -419,7 +420,7 @@ const rushGame = {
     resetData: function() { app.confirm("Reset Rush Records?", (y) => { if(y) { localStorage.removeItem('rush_best'); location.reload(); } }); }
 };
 
-// Survival Mode
+// Survival Mode (Updated Buttons)
 const survivalGame = {
     aimScores: ["50.00", "60.00", "70.00", "75.00", "80.00", "85.00", "88.00", "90.00", "91.00", "92.00", "93.00", "94.00", "95.00", "95.50", "96.00", "96.50", "97.00", "97.50", "98.00", "98.50", "99.00", "99.30", "99.60", "99.90", "100.00"],
     currentStage: 1, questionColor: {},
@@ -459,13 +460,16 @@ const survivalGame = {
         const recordEl = document.getElementById('survival-new-record');
         if(isClear && this.currentStage > maxStage) { recordEl.classList.remove('hidden'); } else { recordEl.classList.add('hidden'); }
 
+        // ★修正: アイコン付きで書き換え
         if(isClear) {
-            this.els.nextBtn.innerText = "NEXT STAGE"; this.els.nextBtn.onclick = () => this.next();
+            this.els.nextBtn.innerHTML = '<span class="btn-icon">▶</span> NEXT STAGE';
+            this.els.nextBtn.onclick = () => this.next();
             localStorage.setItem("4stage_number" + this.currentStage, score);
             if(this.currentStage > maxStage) { localStorage.setItem("4stage_record", this.currentStage); }
             this.currentStage++; localStorage.setItem("4stage_number", this.currentStage); localStorage.removeItem("4RGB_Temporary_Hex");
         } else {
-            this.els.nextBtn.innerText = "RESTART"; this.els.nextBtn.onclick = () => this.quickRestart();
+            this.els.nextBtn.innerHTML = '<span class="btn-icon">↻</span> RESTART';
+            this.els.nextBtn.onclick = () => this.quickRestart();
         }
         this.updateHistory();
     },
@@ -493,6 +497,7 @@ const survivalGame = {
     }
 };
 
+// Another World (Color Storage) - Single Delete & Share
 const anotherGame = {
     init: function() {
         this.els = { R: document.getElementById('another-R'), G: document.getElementById('another-G'), B: document.getElementById('another-B'), valR: document.getElementById('another-val-R'), valG: document.getElementById('another-val-G'), valB: document.getElementById('another-val-B'), myColor: document.getElementById('another-input-color') };
@@ -522,10 +527,107 @@ const anotherGame = {
         let html = "";
         for(let i = val - 1; i > 0; i--) {
             const hex = localStorage.getItem("3input_rgb16"+i) || '#000'; const txt = localStorage.getItem("3input_rgb"+i) || ''; const date = localStorage.getItem("3date"+i) || '';
-            html += `<div class="history-item" style="grid-template-columns: 40px 1fr;"><span class="history-index">#${i}</span><div class="history-colors"><div class="color-row"><span class="chip-xs" style="background:${hex}; width:20px; height:20px;"></span><span style="font-size:1rem; font-weight:bold; color:#fff;">${txt}</span></div><div style="font-size:0.7rem; color:#666; margin-top:2px;">${date}</div></div></div>`;
+            // ★追加: 削除ボタン(x)
+            html += `<div class="history-item" style="grid-template-columns: 35px 1fr 30px;"><span class="history-index">#${i}</span><div class="history-colors"><div class="color-row"><span class="chip-xs" style="background:${hex}; width:20px; height:20px;"></span><span style="font-size:1rem; font-weight:bold; color:#fff;">${txt}</span></div><div style="font-size:0.7rem; color:#666; margin-top:2px;">${date}</div></div><button class="btn-delete" onclick="anotherGame.deleteSingle(${i})">✕</button></div>`;
         }
         list.innerHTML = html;
     },
+    // ★追加: 単体削除
+    deleteSingle: function(targetIdx) {
+        app.confirm("Delete this color?", (y) => {
+            if(y) {
+                const max = Number(localStorage.getItem("3index")) || 1;
+                let items = [];
+                for(let i=1; i<max; i++) {
+                    if(i !== targetIdx) {
+                        items.push({
+                            hex: localStorage.getItem("3input_rgb16"+i),
+                            txt: localStorage.getItem("3input_rgb"+i),
+                            date: localStorage.getItem("3date"+i)
+                        });
+                    }
+                }
+                // Clear all
+                for(let i=1; i<max; i++) { localStorage.removeItem("3input_rgb16"+i); localStorage.removeItem("3input_rgb"+i); localStorage.removeItem("3date"+i); }
+                // Restore
+                items.forEach((item, idx) => {
+                    let newIdx = idx + 1;
+                    localStorage.setItem("3input_rgb16"+newIdx, item.hex);
+                    localStorage.setItem("3input_rgb"+newIdx, item.txt);
+                    localStorage.setItem("3date"+newIdx, item.date);
+                });
+                localStorage.setItem("3index", items.length + 1);
+                this.updateHistory();
+            }
+        });
+    },
+    // ★追加: 一覧共有
+    shareStorage: function() {
+        const canvas = document.getElementById('share-canvas');
+        const ctx = canvas.getContext('2d');
+        const max = Number(localStorage.getItem("3index")) || 1;
+        const count = max - 1;
+
+        if (count === 0) return app.alert("No colors saved!");
+
+        // Canvas Height Calculation (Header + Grid)
+        const cols = 5;
+        const rows = Math.ceil(count / cols);
+        const itemSize = 100;
+        const padding = 20;
+        const headerHeight = 120;
+        const footerHeight = 40;
+        const width = 600;
+        const height = headerHeight + (rows * itemSize) + footerHeight;
+
+        canvas.height = height;
+        
+        // Background
+        const grad = ctx.createLinearGradient(0, 0, width, height);
+        grad.addColorStop(0, '#1a1a2e'); grad.addColorStop(1, '#16213e');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height);
+
+        // Header
+        const img = document.getElementById('source-logo-icon');
+        if (img && img.complete) { ctx.drawImage(img, 25, 25, 50, 50); }
+        ctx.font = '900 32px "Inter", sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText("RETINA", 90, 65);
+        ctx.font = '700 16px "JetBrains Mono", monospace'; ctx.fillStyle = '#8b9bb4'; ctx.fillText("COLOR STORAGE", 440, 65);
+        ctx.beginPath(); ctx.moveTo(30, 90); ctx.lineTo(570, 90); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.stroke();
+
+        // Grid Drawing
+        for(let i=1; i<max; i++) {
+            const hex = localStorage.getItem("3input_rgb16"+i);
+            const txt = localStorage.getItem("3input_rgb"+i); // "(r,g,b)"
+            
+            // Reverse index for display (Newest first? Or Oldest first? Let's do Oldest first as stored)
+            // But usually newest is better. Let's iterate normally.
+            
+            const idx = i - 1;
+            const x = 50 + (idx % cols) * 110; // 50 start, 110 spacing
+            const y = headerHeight + 50 + Math.floor(idx / cols) * 100;
+
+            ctx.save();
+            ctx.beginPath(); ctx.arc(x, y, 35, 0, Math.PI * 2); ctx.fillStyle = hex; ctx.fill();
+            ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.stroke();
+            ctx.restore();
+
+            ctx.font = '10px "JetBrains Mono", monospace'; ctx.fillStyle = '#aaa'; ctx.textAlign = 'center';
+            ctx.fillText(txt.replace(/[()]/g, ''), x, y + 50); // Remove parens
+        }
+
+        // Footer
+        ctx.font = '12px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'center'; ctx.fillText("rgb-guessr.web.app", 300, height - 15);
+
+        canvas.toBlob(blob => {
+            const file = new File([blob], "retina_storage.png", { type: "image/png" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({ files: [file], title: 'Retina Color Storage' }).catch(console.error);
+            } else {
+                const link = document.createElement('a'); link.download = `retina_storage.png`; link.href = canvas.toDataURL(); link.click();
+            }
+        });
+    },
+
     resetData: function() { 
         app.confirm("保存した色をすべて消去しますか？", (y)=>{ 
             if(y){ 
